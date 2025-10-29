@@ -1,40 +1,79 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# Instalar dependencias necesarias
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
     git \
-    curl \
-    zip \
-    unzip \
-    nginx
+    unzip
 
-# Instalar extensiones PHP necesarias
-RUN docker-php-ext-install opcache
+# Instalar extensiones PHP
+RUN docker-php-ext-install opcache pdo pdo_mysql
 
-# Copiar Composer desde imagen oficial
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Instalar Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Establecer directorio de trabajo
-WORKDIR /var/www/symfony
+# Configurar directorio
+WORKDIR /var/www/html
 
-# Copiar todos los archivos del proyecto
-COPY . /var/www/symfony
+# Copiar archivos del proyecto
+COPY . .
 
-# Instalar dependencias de Composer
-ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Limpiar caché de Symfony en modo producción
-RUN php bin/console cache:clear --env=prod
+# Limpiar caché
+RUN php bin/console cache:clear --env=prod --no-warmup || true
+RUN php bin/console cache:warmup --env=prod || true
 
-# Copiar configuración de Nginx
-COPY nginx/vhost.conf /etc/nginx/sites-available/default
+# Configurar Nginx
+RUN rm /etc/nginx/http.d/default.conf
+COPY <<EOF /etc/nginx/http.d/default.conf
+server {
+    listen 80;
+    root /var/www/html/public;
+    index index.php;
 
-# Dar permisos a directorio var
-RUN chmod -R 777 var/
+    location / {
+        try_files \$uri /index.php\$is_args\$args;
+    }
 
-# Comando para iniciar PHP-FPM y Nginx
-CMD service php8.2-fpm start && nginx -g 'daemon off;'
+    location ~ ^/index\.php(/|\$) {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT \$document_root;
+        internal;
+    }
 
-# Exponer puerto 80
+    location ~ \.php$ {
+        return 404;
+    }
+}
+EOF
+
+# Configurar Supervisor
+COPY <<EOF /etc/supervisord.conf
+[supervisord]
+nodaemon=true
+user=root
+
+[program:php-fpm]
+command=php-fpm8 -F
+autostart=true
+autorestart=true
+
+[program:nginx]
+command=nginx -g 'daemon off;'
+autostart=true
+autorestart=true
+EOF
+
+# Permisos
+RUN chown -R nobody:nobody /var/www/html/var
+RUN chmod -R 777 /var/www/html/var
+
 EXPOSE 80
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
