@@ -1,0 +1,228 @@
+.footer-modern {
+    background: linear-gradient(180deg, var(--secondary-white) 0%, var(--secondary-cream) 100%);
+    border-top: 3px solid var(--primary-yellow);
+    margin-top: auto;
+}
+
+/* Footer Content */
+.footer-content {
+    background: var(--secondary-cream);
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+}
+
+.footer-brand h4 {
+    color: var(--dark-gray);
+    font-weight: var(--font-bold);
+    margin: 0;
+}
+
+.text-primary-yellow {
+    color: var(--primary-yellow);
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--secondary-white);
+    color: var(--dark-gray);
+    border-radius: var(--radius-md);
+    transition: var(--transition-all);
+    box-shadow: var(--shadow-sm);
+}
+
+.social-link:hover {
+    background: var(--primary-yellow);
+    color: var(--dark-gray);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Footer Titles */
+.footer-title {
+    color: var(--dark-gray);
+    font-weight: var(--font-bold);
+    font-size: var(--text-lg);
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-yellow);
+    border-radius: var(--radius-full);
+}
+
+/* Footer Links */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: var(--medium-gray);
+    text-decoration: none;
+    transition: var(--transition-colors);
+    display: inline-flex;
+    align-items: center;
+}
+
+.footer-links a::before {
+    content: '→';
+    margin-right: 0.5rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: var(--transition-all);
+}
+
+.footer-links a:hover {
+    color: var(--primary-dark);
+    padding-left: 0.5rem;
+}
+
+.footer-links a:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Newsletter Form */
+.newsletter-form .input-group {
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.newsletter-form .form-control {
+    border: 1px solid var(--border-gray);
+    padding: 0.75rem;
+}
+
+.newsletter-form .form-control:focus {
+    border-color: var(--primary-yellow);
+    box-shadow: 0 0 0 0.2rem rgba(255, 184, 0, 0.25);
+}
+
+.newsletter-form .btn {
+    background: var(--primary-yellow);
+    border: none;
+    padding: 0.75rem 1rem;
+}
+
+.newsletter-form .btn:hover {
+    background: var(--primary-dark);
+}
+
+/* Payment & Shipping Icons */
+.footer-payment {
+    background: var(--secondary-white);
+}
+
+.payment-icons,
+.shipping-icons {
+    display: inline-flex;
+    gap: 1rem;
+    color: var(--medium-gray);
+}
+
+.payment-icons i,
+.shipping-icons i {
+    transition: var(--transition-all);
+}
+
+.payment-icons i:hover,
+.shipping-icons i:hover {
+    color: var(--primary-yellow);
+    transform: scale(1.2);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    background: var(--secondary-white);
+    color: var(--light-gray);
+}
+
+.footer-bottom small {
+    color: var(--light-gray);
+}
+
+/* Scroll to Top Button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 200px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--primary-dark) 100%);
+    color: var(--dark-gray);
+    border: none;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-xl);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-all);
+    z-index: var(--z-fixed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xl);
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-yellow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-title {
+        font-size: var(--text-base);
+        margin-bottom: 1rem;
+    }
+
+    .social-links {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .payment-icons,
+    .shipping-icons {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}

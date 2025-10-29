@@ -1,0 +1,135 @@
+{#
+    Book Detail Tabs Component
+    Tabs con descripción, detalles, etc.
+
+    Parámetros requeridos:
+    - book: objeto libro completo
+#}
+
+<div class="book-info-tabs">
+
+    {# Tabs Navigation #}
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active"
+                    id="description-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#description"
+                    type="button"
+                    role="tab">
+                <i class="bi bi-file-text"></i> Descripción
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="details-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#details"
+                    type="button"
+                    role="tab">
+                <i class="bi bi-info-circle"></i> Detalles
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="reviews-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#reviews"
+                    type="button"
+                    role="tab">
+                <i class="bi bi-star"></i> Reseñas
+            </button>
+        </li>
+    </ul>
+
+    {# Tabs Content #}
+    <div class="tab-content">
+
+        {# Descripción #}
+        <div class="tab-pane fade show active"
+             id="description"
+             role="tabpanel">
+            <div class="book-description">
+                {% if book.descripcion %}
+                    {{ book.descripcion|nl2br }}
+                {% else %}
+                    <p class="text-muted">
+                        <i class="bi bi-info-circle"></i> No hay descripción disponible para este libro.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Detalles técnicos #}
+        <div class="tab-pane fade"
+             id="details"
+             role="tabpanel">
+            <table class="detail-table">
+                <tbody>
+                    {% if book.isbn %}
+                    <tr>
+                        <td><i class="bi bi-upc"></i> ISBN</td>
+                        <td>{{ book.isbn }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.autor %}
+                    <tr>
+                        <td><i class="bi bi-person"></i> Autor</td>
+                        <td>{{ book.autor }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.editorial %}
+                    <tr>
+                        <td><i class="bi bi-building"></i> Editorial</td>
+                        <td>{{ book.editorial }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.fechaPublicacion %}
+                    <tr>
+                        <td><i class="bi bi-calendar"></i> Fecha de Publicación</td>
+                        <td>{{ book.fechaPublicacion }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.paginas %}
+                    <tr>
+                        <td><i class="bi bi-file-earmark-text"></i> Páginas</td>
+                        <td>{{ book.paginas }} páginas</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.idioma %}
+                    <tr>
+                        <td><i class="bi bi-globe"></i> Idioma</td>
+                        <td>{{ book.idioma|upper }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if book.categorias is not empty %}
+                    <tr>
+                        <td><i class="bi bi-tags"></i> Categorías</td>
+                        <td>
+                            {% for categoria in book.categorias %}
+                                <span class="badge bg-light text-dark me-1">{{ categoria }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tab-pane fade"
+             id="reviews"
+             role="tabpanel">
+            <div class="text-center py-5">
+                <i class="bi bi-chat-quote display-1 text-muted"></i>
+                <h4 class="mt-3">No hay reseñas para este libro</h4>
+            </div>
+        </div>
+
+    </div>
+</div>

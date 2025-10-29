@@ -1,0 +1,34 @@
+{#
+    Last Viewed Section Component
+    Muestra los últimos libros visitados (dinámico desde localStorage)
+#}
+
+<section class="category-section-modern" id="last-viewed-section" style="display: none;">
+    <div class="section-header-pro">
+        <div class="section-title-wrapper">
+            <h2 class="section-title-pro">Last viewed</h2>
+            <div class="section-underline"></div>
+        </div>
+    </div>
+
+    <div class="books-scroll-container">
+        <button class="scroll-btn scroll-btn-left" onclick="scrollBooks(this, 'left')">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <div class="books-scroll-wrapper-pro">
+            <div class="books-grid-scroll" id="last-viewed-books">
+                <div class="no-books-message">
+                    <i class="bi bi-clock-history"></i>
+                    <p>No books viewed yet</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="scroll-btn scroll-btn-right" onclick="scrollBooks(this, 'right')">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="scroll-indicators" data-section="last-viewed"></div>
+</section>

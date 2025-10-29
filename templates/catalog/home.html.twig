@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TKOH Bookstore - Tu librería online{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="/css/home.css">
+{% endblock %}
+
+{% block body %}
+
+{% include 'catalog/_components/_hero_carousel.html.twig' with {'books': featuredBooks} %}
+
+<div class="container my-5">
+    {% for section in sections %}
+        {% include 'catalog/_components/_book_section.html.twig' with {'section': section} %}
+    {% endfor %}
+
+    {% include 'catalog/_components/_collection_section.html.twig' with {'books': featuredCollection|default([])} %}
+
+    {% include 'catalog/_components/_last_viewed_section.html.twig' %}
+
+</div>
+
+<div style="display:none;"
+     data-cart-urls='{"add":"{{ path('cart_add') }}","count":"{{ path('cart_count') }}"}'></div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/js/home.js"></script>
+{% endblock %}

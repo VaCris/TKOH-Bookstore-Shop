@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if currentSearch %}
+        Búsqueda: {{ currentSearch }} - TKOH Bookstore
+    {% elseif currentCategoria %}
+        Categoría: {{ currentCategoria }} - TKOH Bookstore
+    {% else %}
+        Catálogo - TKOH Bookstore
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('catalog_index') }}">
+                    <i class="bi bi-house"></i> Inicio
+                </a>
+            </li>
+            {% if currentCategoria %}
+                <li class="breadcrumb-item active">{{ currentCategoria }}</li>
+            {% elseif currentSearch %}
+                <li class="breadcrumb-item active">Búsqueda: {{ currentSearch }}</li>
+            {% else %}
+                <li class="breadcrumb-item active">Catálogo</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">
+            {% if currentSearch %}
+                <i class="bi bi-search"></i> Resultados para "{{ currentSearch }}"
+            {% elseif currentCategoria %}
+                <i class="bi bi-tag-fill"></i> {{ currentCategoria }}
+            {% else %}
+                <i class="bi bi-book-fill"></i> Todos los libros
+            {% endif %}
+        </h1>
+        <span class="badge bg-primary fs-6">
+            {{ totalElements }} libros encontrados
+        </span>
+    </div>
+
+    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-4">
+        {% for book in books %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="book-cover" style="height: 300px;">
+                        <img src="{{ book.imagen }}"
+                             class="card-img-top"
+                             alt="{{ book.titulo }}"
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.src='/images/200x300-placeholder.jpg'">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title text-truncate" title="{{ book.titulo }}">
+                            {{ book.titulo }}
+                        </h6>
+                        <p class="card-text text-muted small text-truncate">
+                            {{ book.autor }}
+                        </p>
+                        <div class="mt-auto">
+                            {% set prices = both_prices(book.precio, book.moneda) %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-success">{{ prices.usd_formatted }}</span>
+                                <br>
+                                <small class="text-muted">{{ prices.pen_formatted }}</small>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('catalog_book_detail', {isbn: book.isbn}) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Ver Detalles
+                                </a>
+                                <button class="btn btn-sm btn-warning"
+                                        onclick="addToCart('{{ book.isbn }}')">
+                                    <i class="bi bi-cart-plus"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle fs-1"></i>
+                    <h4 class="mt-3">No se encontraron libros</h4>
+                    <p>Intenta con otros filtros o términos de búsqueda.</p>
+                    <a href="{{ path('catalog_index') }}" class="btn btn-primary">
+                        Ver todos los libros
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if totalPages > 1 %}
+        <nav aria-label="Paginación" class="mt-5">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ currentPage == 0 ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('catalog_index', {
+                        page: 0,
+                        search: currentSearch,
+                        categoria: currentCategoria
+                    }) }}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+
+                <li class="page-item {{ currentPage == 0 ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('catalog_index', {
+                        page: currentPage - 1,
+                        search: currentSearch,
+                        categoria: currentCategoria
+                    }) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+
+                {% for i in range(max(0, currentPage - 2), min(totalPages - 1, currentPage + 2)) %}
+                    <li class="page-item {{ i == currentPage ? 'active' }}">
+                        <a class="page-link" href="{{ path('catalog_index', {
+                            page: i,
+                            search: currentSearch,
+                            categoria: currentCategoria
+                        }) }}">
+                            {{ i + 1 }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+                <li class="page-item {{ currentPage >= totalPages - 1 ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('catalog_index', {
+                        page: currentPage + 1,
+                        search: currentSearch,
+                        categoria: currentCategoria
+                    }) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+                <li class="page-item {{ currentPage >= totalPages - 1 ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('catalog_index', {
+                        page: totalPages - 1,
+                        search: currentSearch,
+                        categoria: currentCategoria
+                    }) }}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+
+</div>
+
+<div style="display:none;"
+     data-cart-urls='{"add":"{{ path('cart_add') }}","count":"{{ path('cart_count') }}"}'></div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="/js/home.js"></script>
+{% endblock %}

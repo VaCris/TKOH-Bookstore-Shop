@@ -1,0 +1,158 @@
+/**
+ * ===================================
+ * NAVBAR STYLES
+ * ===================================
+ */
+
+ .navbar-modern {
+    background: linear-gradient(90deg, var(--secondary-white) 0%, var(--secondary-cream) 100%);
+    box-shadow: var(--shadow-sm);
+    padding: 1rem 0;
+    backdrop-filter: blur(10px);
+}
+
+.navbar-brand {
+    font-weight: var(--font-extrabold);
+    font-size: var(--text-2xl);
+    color: var(--dark-gray);
+    transition: var(--transition-colors);
+}
+
+.navbar-brand i {
+    color: var(--primary-yellow);
+}
+
+.brand-text {
+    font-family: var(--font-display);
+}
+
+.brand-highlight {
+    color: var(--primary-yellow);
+}
+
+/* Nav Links */
+.navbar-modern .nav-link {
+    color: var(--dark-gray);
+    font-weight: var(--font-medium);
+    padding: 0.5rem 1rem;
+    transition: var(--transition-all);
+    position: relative;
+}
+
+.navbar-modern .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: var(--primary-yellow);
+    transition: var(--transition-normal);
+    border-radius: var(--radius-full);
+}
+
+.navbar-modern .nav-link:hover::after {
+    width: 70%;
+}
+
+.navbar-modern .nav-link:hover {
+    color: var(--primary-dark);
+}
+
+/* Search Form */
+.search-form {
+    width: 100%;
+    max-width: 400px;
+}
+
+.input-group-modern {
+    background: var(--secondary-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.input-group-modern .form-control {
+    background: transparent;
+    padding: 0.75rem 1rem;
+}
+
+.input-group-modern .form-control:focus {
+    box-shadow: none;
+}
+
+.btn-search {
+    background: var(--primary-yellow);
+    color: var(--dark-gray);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: var(--font-semibold);
+    transition: var(--transition-all);
+}
+
+.btn-search:hover {
+    background: var(--primary-dark);
+}
+
+/* Cart Badge */
+.cart-link {
+    position: relative;
+}
+
+.cart-badge-modern {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+    color: var(--secondary-white);
+    border-radius: var(--radius-full);
+    padding: 0.25rem 0.5rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    box-shadow: var(--shadow-md);
+    min-width: 20px;
+    text-align: center;
+}
+
+/* User Avatar */
+.user-avatar {
+    color: var(--primary-yellow);
+}
+
+/* Dropdown */
+.dropdown-menu-modern {
+    border: none;
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem;
+}
+
+.dropdown-menu-modern .dropdown-item {
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-colors);
+}
+
+.dropdown-menu-modern .dropdown-item:hover {
+    background-color: var(--secondary-cream);
+}
+
+/* Exchange Rate Bar */
+.exchange-rate-bar {
+    background: var(--secondary-cream);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-gray);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .search-form {
+        max-width: 100%;
+        margin: 1rem 0;
+    }
+
+    .navbar-modern .nav-link::after {
+        display: none;
+    }
+}

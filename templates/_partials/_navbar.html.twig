@@ -1,0 +1,152 @@
+{#
+    Navbar Component
+    Navegación principal del sitio
+#}
+
+<nav class="navbar navbar-expand-lg navbar-modern sticky-top">
+    <div class="container-fluid px-4">
+
+        {# Logo y Marca #}
+        <a class="navbar-brand d-flex align-items-center" href="{{ path('catalog_index') }}">
+            <i class="bi bi-book-fill me-2 fs-3"></i>
+            <span class="brand-text">TKOH <span class="brand-highlight">Bookstore</span></span>
+        </a>
+
+        {# Mobile Toggle #}
+        <button class="navbar-toggler border-0"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        {# Navbar Content #}
+        <div class="collapse navbar-collapse" id="navbarMain">
+
+            {# Navegación Principal #}
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('catalog_index') }}">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+                        <i class="bi bi-tags"></i> Categorías
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-modern">
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Fiction'}) }}">
+                                📚 Ficción
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Science Fiction'}) }}">
+                                🚀 Ciencia Ficción
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Fantasy'}) }}">
+                                🧙 Fantasía
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Mystery'}) }}">
+                                🔍 Misterio
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Romance'}) }}">
+                                💕 Romance
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('catalog_index') }}">
+                                Ver todas las categorías →
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-star"></i> Destacados
+                    </a>
+                </li>
+            </ul>
+
+            {# Buscador #}
+            <form class="search-form me-3" action="{{ path('catalog_index') }}" method="get">
+                <div class="input-group input-group-modern">
+                    <input type="text"
+                           class="form-control border-0"
+                           name="search"
+                           placeholder="Buscar libros, autores..."
+                           value="{{ app.request.query.get('search') }}">
+                    <button class="btn btn-search" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            {# User Actions #}
+            <ul class="navbar-nav align-items-center">
+
+                {# Carrito #}
+                <li class="nav-item me-2">
+                    <a class="nav-link position-relative cart-link" href="{{ path('cart_index') }}">
+                        <i class="bi bi-cart3 fs-5"></i>
+                        <span id="cart-badge" class="cart-badge-modern">0</span>
+                    </a>
+                </li>
+
+                {# Usuario #}
+                <li class="nav-item dropdown">
+                    {% if app.session.get('user') %}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center"
+                           href="#"
+                           role="button"
+                           data-bs-toggle="dropdown">
+                            <div class="user-avatar me-2">
+                                <i class="bi bi-person-circle fs-4"></i>
+                            </div>
+                            <span class="d-none d-lg-inline">{{ app.session.get('user').name }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person"></i> Mi Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-box-seam"></i> Mis Pedidos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-heart"></i> Favoritos
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ path('auth_logout') }}">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <a class="btn btn-primary btn-sm" href="{{ path('auth_login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    {% endif %}
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+

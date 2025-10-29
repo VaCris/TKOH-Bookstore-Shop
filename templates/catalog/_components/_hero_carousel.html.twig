@@ -1,0 +1,132 @@
+{#
+    Hero Carousel Component - Versión Mejorada
+    Muestra carrusel de libros destacados con diseño profesional
+
+    Parámetros requeridos:
+    - books: array de libros destacados
+#}
+
+<section class="hero-carousel-modern">
+    <div class="swiper heroSwiper">
+        <div class="swiper-wrapper">
+            {% for book in books %}
+                <div class="swiper-slide">
+                    <div class="hero-slide-modern">
+                        <div class="container">
+                            <div class="row align-items-center g-5">
+
+                                {# Columna Izquierda: Información del Libro #}
+                                <div class="col-lg-6 hero-content-left">
+
+                                    {# Badge Destacado #}
+                                    <div class="hero-badge-modern animate-fade-in-up">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>Autor del mes</span>
+                                    </div>
+
+                                    {# Título Principal #}
+                                    <h1 class="hero-title-modern animate-fade-in-up" style="animation-delay: 0.1s;">
+                                        {{ book.titulo }}
+                                    </h1>
+
+                                    {# Autor #}
+                                    <p class="hero-author-modern animate-fade-in-up" style="animation-delay: 0.2s;">
+                                        <i class="bi bi-person-circle"></i>
+                                        {{ book.autor }}
+                                    </p>
+
+                                    {# Descripción Corta #}
+                                    {% if book.descripcion %}
+                                        <p class="hero-description animate-fade-in-up" style="animation-delay: 0.3s;">
+                                            {{ book.descripcion|slice(0, 180) }}{% if book.descripcion|length > 180 %}...{% endif %}
+                                        </p>
+                                    {% endif %}
+
+                                    {# Precio y Descuento #}
+                                    {% set prices = both_prices(book.precio, book.moneda) %}
+                                    <div class="hero-price-section animate-fade-in-up" style="animation-delay: 0.4s;">
+                                        <div class="discount-badge">
+                                            <span class="discount-label">DESCUENTO</span>
+                                            <span class="discount-value">30%</span>
+                                        </div>
+                                        <div class="price-info">
+                                            <div class="price-current">{{ prices.usd_formatted }}</div>
+                                            <div class="price-converted">≈ {{ prices.pen_formatted }}</div>
+                                        </div>
+                                    </div>
+
+                                    {# Botones de Acción #}
+                                    <div class="hero-actions animate-fade-in-up" style="animation-delay: 0.5s;">
+                                        <a href="{{ path('catalog_book_detail', {isbn: book.isbn}) }}"
+                                           class="btn btn-hero-primary">
+                                            <i class="bi bi-eye"></i>
+                                            Ver Detalles
+                                        </a>
+                                        <button class="btn btn-hero-secondary"
+                                                onclick="addToCart('{{ book.isbn }}')">
+                                            <i class="bi bi-cart-plus"></i>
+                                            Agregar al Carrito
+                                        </button>
+                                    </div>
+
+                                    {# Info Adicional #}
+                                    <div class="hero-features animate-fade-in-up" style="animation-delay: 0.6s;">
+                                        <div class="feature-item">
+                                            <i class="bi bi-truck"></i>
+                                            <span>Envío gratis</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="bi bi-shield-check"></i>
+                                            <span>Compra segura</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                            <span>Devolución gratis</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                {# Columna Derecha: Imagen del Libro #}
+                                <div class="col-lg-6">
+                                    <div class="hero-book-display animate-fade-in" style="animation-delay: 0.3s;">
+                                        <div class="book-3d-container">
+                                            <img src="{{ book.imagenGrande ?? book.imagen }}"
+                                                 alt="{{ book.titulo }}"
+                                                 class="hero-book-image"
+                                                 onerror="this.src='/images/200x300-placeholder.jpg'">
+
+                                            {# Stock Indicator #}
+                                            <div class="stock-badge">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Disponible en stock
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="swiper-slide">
+                    <div class="hero-slide-modern">
+                        <div class="container">
+                            <div class="text-center py-5">
+                                <h2>Cargando libros destacados...</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Controles de Navegación #}
+        <div class="swiper-button-next hero-nav-button"></div>
+        <div class="swiper-button-prev hero-nav-button"></div>
+
+        {# Paginación #}
+        <div class="swiper-pagination hero-pagination"></div>
+    </div>
+</section>

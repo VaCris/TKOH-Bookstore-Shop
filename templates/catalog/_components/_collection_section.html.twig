@@ -1,0 +1,17 @@
+{#
+    Collection Section Component
+    Muestra una colección especial de libros
+
+    Parámetros opcionales:
+    - books: array de libros de la colección
+#}
+
+{% if books is defined and books|length > 0 %}
+    {% include 'catalog/_components/_book_section.html.twig' with {
+        'section': {
+            'key': 'collection',
+            'name': 'Collection',
+            'books': books
+        }
+    } %}
+{% endif %}

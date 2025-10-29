@@ -1,0 +1,11 @@
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
+             role="alert"
+             style="z-index: 9999; min-width: 300px; max-width: 600px;">
+            <i class="bi bi-{{ label == 'success' ? 'check-circle-fill' : (label == 'danger' ? 'x-circle-fill' : 'info-circle-fill') }}"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endfor %}

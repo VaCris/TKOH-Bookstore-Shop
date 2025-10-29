@@ -1,0 +1,127 @@
+{#
+    Book Section Component - Versión Mejorada
+    Muestra una sección horizontal de libros con diseño profesional
+
+    Parámetros requeridos:
+    - section: objeto con 'key', 'name', 'books'
+#}
+
+<section class="category-section-modern">
+
+    {# Header de la Sección #}
+    <div class="section-header-pro">
+        <div class="section-title-wrapper">
+            <h2 class="section-title-pro">{{ section.name }}</h2>
+            <div class="section-underline"></div>
+        </div>
+        <a href="{{ path('catalog_index', {categoria: section.key}) }}"
+           class="btn-view-all">
+            Ver todo
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    {# Scroll de Libros #}
+    <div class="books-scroll-container">
+
+        {# Botón Scroll Izquierda #}
+        <button class="scroll-btn scroll-btn-left" onclick="scrollBooks(this, 'left')">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <div class="books-scroll-wrapper-pro">
+            <div class="books-grid-scroll">
+                {% for book in section.books %}
+                    <div class="book-card-pro">
+                        <div class="book-card-inner">
+
+                            {# Imagen del Libro #}
+                            <div class="book-image-wrapper">
+                                <img src="{{ book.imagen }}"
+                                     alt="{{ book.titulo }}"
+                                     class="book-image-pro"
+                                     loading="lazy"
+                                     onerror="this.src='/images/200x300-placeholder.jpg'">
+
+                                {# Overlay con acciones #}
+                                <div class="book-overlay-actions">
+                                    <button class="btn-quick-view"
+                                            onclick="window.location.href='{{ path('catalog_book_detail', {isbn: book.isbn}) }}'">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn-quick-cart"
+                                            onclick="addToCart('{{ book.isbn }}')">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </div>
+
+                                {# Badge de Categoría #}
+                                {% if book.categoria %}
+                                    <div class="category-badge">
+                                        {{ book.categoria }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Información del Libro #}
+                            <div class="book-info-pro">
+
+                                {# Título #}
+                                <h3 class="book-title-pro" title="{{ book.titulo }}">
+                                    <a href="{{ path('catalog_book_detail', {isbn: book.isbn}) }}">
+                                        {{ book.titulo }}
+                                    </a>
+                                </h3>
+
+                                {# Autor #}
+                                <p class="book-author-pro">
+                                    {{ book.autor }}
+                                </p>
+
+                                {# Rating (Placeholder) #}
+                                <div class="book-rating-pro">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                    <span class="rating-count">(4.5)</span>
+                                </div>
+
+                                {# Precio #}
+                                {% set prices = both_prices(book.precio, book.moneda) %}
+                                <div class="book-price-pro">
+                                    <div class="price-main">{{ prices.usd_formatted }}</div>
+                                    <div class="price-alt">{{ prices.pen_formatted }}</div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="no-books-message">
+                        <i class="bi bi-info-circle"></i>
+                        <p>No hay libros disponibles en esta categoría.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Botón Scroll Derecha #}
+        <button class="scroll-btn scroll-btn-right" onclick="scrollBooks(this, 'right')">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+    </div>
+
+    {# Indicadores de Scroll (dots) #}
+    <div class="scroll-indicators" data-section="{{ section.key }}">
+        {% set totalBooks = section.books|length %}
+        {% set dotsCount = (totalBooks / 4)|round(0, 'ceil') %}
+        {% for i in 1..dotsCount %}
+            <span class="scroll-dot {{ i == 1 ? 'active' : '' }}"></span>
+        {% endfor %}
+    </div>
+
+</section>

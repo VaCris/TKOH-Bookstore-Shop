@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Iniciar Sesión - TKOH Bookstore{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-book-fill text-primary"></i>
+                        Iniciar Sesión
+                    </h2>
+
+                    {# Mensajes Flash #}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    <form method="post" action="{{ path('auth_login_submit') }}">
+                        {# Email #}
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Correo Electrónico
+                            </label>
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="email"
+                                name="email"
+                                placeholder="tu@email.com"
+                                required
+                                autofocus
+                            >
+                        </div>
+
+                        {# Password #}
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock"></i> Contraseña
+                            </label>
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="password"
+                                name="password"
+                                placeholder="••••••••"
+                                required
+                            >
+                        </div>
+
+                        {# Remember & Forgot Password #}
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">
+                                    Recordarme
+                                </label>
+                            </div>
+                            <a href="#" class="text-decoration-none small">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+
+                        {# Submit Button #}
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </button>
+
+                        {# Register Link #}
+                        <div class="text-center">
+                            <span class="text-muted">¿No tienes cuenta?</span>
+                            <a href="{{ path('auth_register') }}" class="text-decoration-none">
+                                Regístrate aquí
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {# Volver al catálogo #}
+            <div class="text-center mt-3">
+                <a href="{{ path('catalog_index') }}" class="text-decoration-none">
+                    <i class="bi bi-arrow-left"></i> Volver al catálogo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

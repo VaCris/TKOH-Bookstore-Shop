@@ -1,0 +1,51 @@
+{#
+    Related Books Component
+    Muestra libros relacionados
+
+    Parámetros requeridos:
+    - books: array de libros relacionados
+#}
+
+{% if books is not empty %}
+<section class="related-books-section">
+    <h2 class="section-title">
+        <i class="bi bi-bookmark-heart-fill"></i> Libros Relacionados
+    </h2>
+
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+        {% for relatedBook in books %}
+            <div class="col">
+                <div class="card related-book-card h-100 shadow-sm">
+                    <div class="related-book-cover">
+                        <img src="{{ relatedBook.imagen }}"
+                             class="card-img-top"
+                             alt="{{ relatedBook.titulo }}"
+                             onerror="this.src='/images/200x300-placeholder.jpg'">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title text-truncate" title="{{ relatedBook.titulo }}">
+                            {{ relatedBook.titulo }}
+                        </h6>
+                        <p class="card-text text-muted small text-truncate mb-2">
+                            {{ relatedBook.autor }}
+                        </p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                {% set prices = both_prices(relatedBook.precio, relatedBook.moneda) %}
+                                <span class="fw-bold text-success d-block">{{ prices.usd_formatted }}</span>
+                                <small class="text-muted">{{ prices.pen_formatted }}</small>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('catalog_book_detail', {isbn: relatedBook.isbn}) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Ver Detalles
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
