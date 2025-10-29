@@ -24,8 +24,6 @@ class CartController extends AbstractController
         $this->apiService = $apiService;
     }
 
-    // ==================== VER CARRITO ====================
-
     /**
      * Mostrar el carrito de compras
      */
@@ -42,8 +40,6 @@ class CartController extends AbstractController
             'itemCount' => $itemCount
         ]);
     }
-
-    // ==================== AGREGAR AL CARRITO ====================
 
     /**
      * Agregar libro al carrito (AJAX)
@@ -62,7 +58,6 @@ class CartController extends AbstractController
             ], 400);
         }
 
-        // Obtener información del libro
         $book = $this->apiService->getBookByIsbn($isbn);
 
         if (!$book) {
@@ -72,7 +67,6 @@ class CartController extends AbstractController
             ], 404);
         }
 
-        // Agregar al carrito
         $this->cartService->addItem($book, $quantity);
 
         return $this->json([
@@ -83,10 +77,8 @@ class CartController extends AbstractController
         ]);
     }
 
-    // ==================== ACTUALIZAR CANTIDAD ====================
-
     /**
-     * Actualizar cantidad de un item (AJAX)
+     * Actualizar cantidad de un item
      */
     #[Route('/actualizar', name: 'cart_update', methods: ['POST'])]
     public function update(Request $request): JsonResponse
@@ -102,7 +94,6 @@ class CartController extends AbstractController
             ], 400);
         }
 
-        // Actualizar cantidad
         $this->cartService->updateQuantity($isbn, (int) $quantity);
 
         return $this->json([
@@ -112,8 +103,6 @@ class CartController extends AbstractController
             'total' => $this->cartService->getTotal()
         ]);
     }
-
-    // ==================== ELIMINAR DEL CARRITO ====================
 
     /**
      * Eliminar item del carrito (AJAX)
@@ -131,7 +120,6 @@ class CartController extends AbstractController
             ], 400);
         }
 
-        // Eliminar del carrito
         $this->cartService->removeItem($isbn);
 
         return $this->json([
@@ -141,8 +129,6 @@ class CartController extends AbstractController
             'total' => $this->cartService->getTotal()
         ]);
     }
-
-    // ==================== VACIAR CARRITO ====================
 
     /**
      * Vaciar todo el carrito
@@ -155,8 +141,6 @@ class CartController extends AbstractController
 
         return $this->redirectToRoute('catalog_index');
     }
-
-    // ==================== CONTADOR DEL CARRITO ====================
 
     /**
      * Obtener cantidad de items en el carrito (para el badge)

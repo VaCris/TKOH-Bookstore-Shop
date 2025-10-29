@@ -25,8 +25,6 @@ class CheckoutController extends AbstractController
     ) {
         $this->cartService = $cartService;
         $this->apiService = $apiService;
-
-        // Configurar Stripe
         Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
     }
 
@@ -73,8 +71,6 @@ class CheckoutController extends AbstractController
         try {
             $userData = $this->apiService->getUserData();
             $cart = $this->cartService->getCart();
-
-            // Construir line items para Stripe
             $lineItems = [];
 
             foreach ($cart as $item) {
@@ -86,13 +82,12 @@ class CheckoutController extends AbstractController
                             'description' => 'Por ' . $item['autor'],
                             'images' => $item['imagen'] ? [$item['imagen']] : [],
                         ],
-                        'unit_amount' => (int) ($item['precio'] * 100), // Convertir a centavos
+                        'unit_amount' => (int) ($item['precio'] * 100),
                     ],
                     'quantity' => $item['cantidad'],
                 ];
             }
 
-            // Agregar envío si aplica
             $shippingCost = $this->cartService->getShippingCost();
             if ($shippingCost > 0) {
                 $lineItems[] = [
@@ -108,7 +103,6 @@ class CheckoutController extends AbstractController
                 ];
             }
 
-            // Crear sesión de Stripe
             $session = Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
@@ -146,8 +140,6 @@ class CheckoutController extends AbstractController
     public function success(Request $request): Response
     {
         $sessionId = $request->query->get('session_id');
-
-        // Vaciar carrito
         $this->cartService->clearCart();
 
         $this->addFlash('success', '¡Pago realizado con éxito! Gracias por tu compra.');

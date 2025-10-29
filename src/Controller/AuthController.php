@@ -18,15 +18,12 @@ class AuthController extends AbstractController
         $this->apiService = $apiService;
     }
 
-    // ==================== LOGIN ====================
-
     /**
      * Mostrar formulario de login
      */
     #[Route('/login', name: 'auth_login', methods: ['GET'])]
     public function loginForm(): Response
     {
-        // Si ya está autenticado, redirigir al catálogo
         if ($this->apiService->isAuthenticated()) {
             return $this->redirectToRoute('catalog_index');
         }
@@ -43,19 +40,15 @@ class AuthController extends AbstractController
         $email = $request->request->get('email');
         $password = $request->request->get('password');
 
-        // Validar campos
         if (!$email || !$password) {
             $this->addFlash('error', 'Por favor, completa todos los campos.');
             return $this->redirectToRoute('auth_login');
         }
 
-        // Llamar a la API
         $result = $this->apiService->login($email, $password);
 
         if ($result['success']) {
             $this->addFlash('success', '¡Bienvenido de nuevo!');
-
-            // Redirigir a la página anterior o al catálogo
             $redirectUrl = $request->request->get('_target_path', $this->generateUrl('catalog_index'));
             return $this->redirect($redirectUrl);
         } else {
@@ -64,15 +57,12 @@ class AuthController extends AbstractController
         }
     }
 
-    // ==================== REGISTER ====================
-
     /**
      * Mostrar formulario de registro
      */
     #[Route('/register', name: 'auth_register', methods: ['GET'])]
     public function registerForm(): Response
     {
-        // Si ya está autenticado, redirigir al catálogo
         if ($this->apiService->isAuthenticated()) {
             return $this->redirectToRoute('catalog_index');
         }
@@ -86,7 +76,6 @@ class AuthController extends AbstractController
     #[Route('/register', name: 'auth_register_submit', methods: ['POST'])]
     public function register(Request $request): Response
     {
-        // Obtener datos del formulario
         $email = $request->request->get('email');
         $password = $request->request->get('password');
         $confirmPassword = $request->request->get('confirm_password');
@@ -94,7 +83,6 @@ class AuthController extends AbstractController
         $apellidos = $request->request->get('apellidos');
         $celular = $request->request->get('celular');
 
-        // Validaciones básicas
         if (!$email || !$password || !$nombre || !$apellidos) {
             $this->addFlash('error', 'Por favor, completa todos los campos obligatorios.');
             return $this->redirectToRoute('auth_register');
@@ -110,7 +98,6 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('auth_register');
         }
 
-        // Preparar datos para la API
         $userData = [
             'email' => $email,
             'password' => $password,
@@ -122,7 +109,6 @@ class AuthController extends AbstractController
             $userData['celular'] = $celular;
         }
 
-        // Llamar a la API
         $result = $this->apiService->register($userData);
 
         if ($result['success']) {
@@ -133,8 +119,6 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('auth_register');
         }
     }
-
-    // ==================== LOGOUT ====================
 
     /**
      * Cerrar sesión
