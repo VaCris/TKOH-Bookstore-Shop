@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tkoh-bookstore-shop
+    runtime: docker
+    plan: free
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
