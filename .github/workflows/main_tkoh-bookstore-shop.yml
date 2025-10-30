@@ -41,7 +41,7 @@ jobs:
 
       - name: Install PHP dependencies for production
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
       - name: Install Node dependencies and build assets
         run: |
