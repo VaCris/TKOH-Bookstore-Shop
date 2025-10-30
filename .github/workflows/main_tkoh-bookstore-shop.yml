@@ -42,12 +42,13 @@ jobs:
       - name: Install PHP dependencies for production
         if: steps.check_files.outputs.files_exists == 'true'
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
-
+      - name: Generate .env.local.php for production
+        run: |
+          echo "<?php return ['APP_ENV' => 'prod', 'APP_SECRET' => '${{ secrets.APP_SECRET }}'];" > .env.local.php
       - name: Install Node dependencies and build assets
         run: |
           npm ci
           npm run build
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
