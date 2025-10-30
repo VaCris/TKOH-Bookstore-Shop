@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Packages.composer", "nginx"]
+nixPkgs = ["php82", "php82Packages.composer", "nginx", "nodejs-18_x", "npm-9_x"]
 
 [start]
 cmd = "sed -i \"s/listen 8080/listen $PORT/g\" /assets/nginx.template.conf && node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)"
