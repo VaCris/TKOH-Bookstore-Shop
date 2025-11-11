@@ -12,8 +12,11 @@ class GoogleBooksService
     private LoggerInterface $logger;
     private string $baseUrl = 'https://www.googleapis.com/books/v1/';
 
+    private const MAX_RESULTS = 40;
+    private const MAX_START_INDEX = 1000;
+
     public function __construct(
-        HttpClientInterface $httpClient, // ← Cambiar nombre del parámetro
+        HttpClientInterface $httpClient,
         LoggerInterface $logger,
         ?string $googleBooksApiKey = null
     ) {
@@ -27,67 +30,87 @@ class GoogleBooksService
         int $startIndex = 0,
         int $maxResults = 40
     ): array {
-        $this->logger->info('🔍 [GOOGLE BOOKS] Iniciando búsqueda', [
+        $this->logger->info('[GoogleBooks] Search started', [
             'query' => $query,
             'startIndex' => $startIndex,
             'maxResults' => $maxResults
         ]);
 
         if (empty(trim($query))) {
-            $this->logger->error('❌ Query vacío recibido');
+            $this->logger->warning('[GoogleBooks] Empty query received');
+            return ['items' => [], 'totalItems' => 0];
+        }
+
+        if ($startIndex > self::MAX_START_INDEX) {
+            $this->logger->warning('[GoogleBooks] startIndex exceeds maximum', [
+                'requested' => $startIndex,
+                'maximum' => self::MAX_START_INDEX
+            ]);
             return ['items' => [], 'totalItems' => 0];
         }
 
         try {
+            $normalizedMaxResults = min($maxResults, self::MAX_RESULTS);
+
             $params = [
                 'q' => $query,
                 'startIndex' => $startIndex,
-                'maxResults' => min($maxResults, 40),
-                'printType' => 'books'
+                'maxResults' => $normalizedMaxResults,
+                'printType' => 'books',
+                'orderBy' => 'relevance',
             ];
 
             if ($this->apiKey) {
                 $params['key'] = $this->apiKey;
             }
 
-            $this->logger->info('📡 Parámetros de petición', $params);
-
-            // ✅ CORRECCIÓN: URL completa
             $url = $this->baseUrl . 'volumes?' . http_build_query($params);
-            $this->logger->info('🌐 URL completa', ['url' => $url]);
+
+            $this->logger->debug('[GoogleBooks] Request parameters', [
+                'url' => $url,
+                'params' => array_merge($params, ['key' => $this->apiKey ? 'set' : 'not_set'])
+            ]);
 
             $response = $this->client->request('GET', $url);
-
             $statusCode = $response->getStatusCode();
-            $this->logger->info('✅ Respuesta recibida', ['status' => $statusCode]);
 
             if ($statusCode !== 200) {
-                $this->logger->error('❌ Status code no exitoso', ['status' => $statusCode]);
+                $this->logger->error('[GoogleBooks] API returned non-200 status', [
+                    'status' => $statusCode,
+                    'query' => $query
+                ]);
                 return ['items' => [], 'totalItems' => 0];
             }
 
             $data = $response->toArray();
 
             $totalItems = $data['totalItems'] ?? 0;
-            $itemsCount = count($data['items'] ?? []);
+            $itemsReturned = count($data['items'] ?? []);
 
-            $this->logger->info('📚 Datos recibidos', [
+            $this->logger->info('[GoogleBooks] Search response received', [
                 'totalItems' => $totalItems,
-                'itemsReturned' => $itemsCount
+                'itemsReturned' => $itemsReturned,
+                'query' => $query
             ]);
 
-            if (!empty($data['items'])) {
+            if (!empty($data['items']) && $itemsReturned < 3) {
                 foreach (array_slice($data['items'], 0, 3) as $index => $item) {
                     $volumeInfo = $item['volumeInfo'] ?? [];
-                    $this->logger->info("📖 Libro #" . ($index + 1), [
-                        'title' => $volumeInfo['title'] ?? 'Sin título',
-                        'authors' => $volumeInfo['authors'] ?? []
+                    $this->logger->debug('[GoogleBooks] Book found', [
+                        'index' => $index + 1,
+                        'title' => $volumeInfo['title'] ?? 'No title',
+                        'authors' => $volumeInfo['authors'] ?? [],
+                        'id' => $item['id'] ?? 'No ID'
                     ]);
                 }
             }
 
             $normalizedBooks = $this->normalizeBooks($data['items'] ?? []);
-            $this->logger->info('✅ Libros normalizados', ['count' => count($normalizedBooks)]);
+
+            $this->logger->info('[GoogleBooks] Books normalized successfully', [
+                'count' => count($normalizedBooks),
+                'query' => $query
+            ]);
 
             return [
                 'items' => $normalizedBooks,
@@ -95,9 +118,10 @@ class GoogleBooksService
             ];
 
         } catch (\Exception $e) {
-            $this->logger->error('❌ Error general', [
+            $this->logger->error('[GoogleBooks] Search failed', [
                 'error' => $e->getMessage(),
-                'query' => $query
+                'query' => $query,
+                'exception' => get_class($e)
             ]);
             return ['items' => [], 'totalItems' => 0];
         }
@@ -105,20 +129,24 @@ class GoogleBooksService
 
     public function getBookByIsbn(string $isbn): ?array
     {
-        $this->logger->info('🔍 [GOOGLE BOOKS] Buscando por ISBN', ['isbn' => $isbn]);
+        $this->logger->info('[GoogleBooks] ISBN lookup started', ['isbn' => $isbn]);
 
         try {
             $result = $this->searchBooks("isbn:{$isbn}", 0, 1);
 
             if (!empty($result['items'])) {
-                $this->logger->info('✅ Libro encontrado por ISBN');
+                $this->logger->info('[GoogleBooks] Book found by ISBN', [
+                    'isbn' => $isbn,
+                    'title' => $result['items'][0]['titulo'] ?? 'Unknown'
+                ]);
                 return $result['items'][0];
             }
 
-            $this->logger->warning('⚠️ No se encontró libro con ISBN');
+            $this->logger->warning('[GoogleBooks] Book not found by ISBN', ['isbn' => $isbn]);
             return null;
+
         } catch (\Exception $e) {
-            $this->logger->error('❌ Error buscando por ISBN', [
+            $this->logger->error('[GoogleBooks] ISBN lookup failed', [
                 'isbn' => $isbn,
                 'error' => $e->getMessage()
             ]);
@@ -129,18 +157,33 @@ class GoogleBooksService
     public function getBooksByCategory(string $category, int $page = 0, int $size = 40): array
     {
         $startIndex = $page * $size;
+        $this->logger->debug('[GoogleBooks] Category search', [
+            'category' => $category,
+            'page' => $page,
+            'size' => $size
+        ]);
         return $this->searchBooks("subject:{$category}", $startIndex, $size);
     }
 
     public function getBooksByAuthor(string $author, int $page = 0, int $size = 40): array
     {
         $startIndex = $page * $size;
+        $this->logger->debug('[GoogleBooks] Author search', [
+            'author' => $author,
+            'page' => $page,
+            'size' => $size
+        ]);
         return $this->searchBooks("inauthor:{$author}", $startIndex, $size);
     }
 
     public function getBooksByTitle(string $title, int $page = 0, int $size = 40): array
     {
         $startIndex = $page * $size;
+        $this->logger->debug('[GoogleBooks] Title search', [
+            'title' => $title,
+            'page' => $page,
+            'size' => $size
+        ]);
         return $this->searchBooks("intitle:{$title}", $startIndex, $size);
     }
 
@@ -151,7 +194,15 @@ class GoogleBooksService
             $saleInfo = $item['saleInfo'] ?? [];
 
             $isbn = $this->extractIsbn($volumeInfo['industryIdentifiers'] ?? []);
-            $precio = $saleInfo['listPrice']['amount'] ?? 25.00;
+            $price = null;
+            $currency = 'USD';
+            $rating = $volumeInfo['averageRating'] ?? null;
+            $ratingsCount = $volumeInfo['ratingsCount'] ?? 0;
+
+            if (isset($saleInfo['listPrice'])) {
+                $price = $saleInfo['listPrice']['amount'] ?? null;
+                $currency = $saleInfo['listPrice']['currencyCode'] ?? 'USD';
+            }
 
             return [
                 'id' => $item['id'] ?? null,
@@ -171,13 +222,15 @@ class GoogleBooksService
                 'idioma' => $volumeInfo['language'] ?? 'es',
                 'imagen' => $volumeInfo['imageLinks']['thumbnail'] ?? null,
                 'imagenGrande' => $volumeInfo['imageLinks']['large'] ??
-                                 $volumeInfo['imageLinks']['medium'] ??
-                                 $volumeInfo['imageLinks']['thumbnail'] ?? null,
-                'precio' => $precio,
-                'moneda' => $saleInfo['listPrice']['currencyCode'] ?? 'USD',
+                    $volumeInfo['imageLinks']['medium'] ??
+                    $volumeInfo['imageLinks']['thumbnail'] ?? null,
+                'precio' => $price,
+                'moneda' => $currency,
                 'disponible' => ($saleInfo['saleability'] ?? 'NOT_FOR_SALE') === 'FOR_SALE',
                 'previewLink' => $volumeInfo['previewLink'] ?? null,
-                'infoLink' => $volumeInfo['infoLink'] ?? null
+                'infoLink' => $volumeInfo['infoLink'] ?? null,
+                'rating' => $rating,
+                'ratings_count' => $ratingsCount,
             ];
         }, $items);
     }

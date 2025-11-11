@@ -1,161 +1,167 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
-use App\Service\CartService;
-use App\Service\BookstoreApiService;
+use App\Service\StripeService;
+use App\Service\GoogleBooksService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Stripe\Stripe;
-use Stripe\Checkout\Session;
+use Psr\Log\LoggerInterface;
 
-#[Route('/checkout')]
 class CheckoutController extends AbstractController
 {
-    private CartService $cartService;
-    private BookstoreApiService $apiService;
+    private StripeService $stripeService;
+    private GoogleBooksService $googleBooksService;
+    private LoggerInterface $logger;
 
     public function __construct(
-        CartService $cartService,
-        BookstoreApiService $apiService
+        StripeService $stripeService,
+        GoogleBooksService $googleBooksService,
+        LoggerInterface $logger
     ) {
-        $this->cartService = $cartService;
-        $this->apiService = $apiService;
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        $this->stripeService = $stripeService;
+        $this->googleBooksService = $googleBooksService;
+        $this->logger = $logger;
     }
 
-    /**
-     * Página de checkout
-     */
-    #[Route('/', name: 'checkout_index')]
-    public function index(): Response
+    #[Route('/checkout', name: 'checkout_index')]
+    public function index(Request $request): Response
     {
-        if (!$this->apiService->isAuthenticated()) {
-            $this->addFlash('warning', 'Debes iniciar sesión para continuar.');
-            return $this->redirectToRoute('auth_login');
-        }
+        $this->logger->info('[Checkout] Guest checkout access');
 
-        if ($this->cartService->isEmpty()) {
+        $cart = $request->getSession()->get('cart', []);
+
+        if (empty($cart)) {
             $this->addFlash('warning', 'Tu carrito está vacío.');
             return $this->redirectToRoute('catalog_index');
         }
 
-        $userData = $this->apiService->getUserData();
-        $checkoutData = $this->cartService->prepareForCheckout();
+        $subtotal = 0;
+        $cartItems = [];
+
+        foreach ($cart as $isbn => $item) {
+            $cartItems[] = [
+                'isbn' => $isbn,
+                'titulo' => $item['titulo'] ?? 'Unknown',
+                'autor' => $item['autor'] ?? 'Unknown',
+                'precio' => $item['precio'] ?? 0,
+                'moneda' => $item['moneda'] ?? 'USD',
+                'cantidad' => $item['cantidad'] ?? 1,
+                'imagen' => $item['imagen'] ?? '/images/200x300-placeholder.jpg',
+            ];
+            $subtotal += ($item['precio'] ?? 0) * ($item['cantidad'] ?? 1);
+        }
+
+        $shipping = $subtotal >= 50 ? 0 : 5;
+        $total = $subtotal + $shipping;
 
         return $this->render('checkout/index.html.twig', [
-            'cart' => $checkoutData,
-            'user' => $userData,
-            'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY']
+            'cartItems' => $cartItems,
+            'subtotal' => $subtotal,
+            'total' => $total,
+            'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'page_name' => 'checkout',
+            'is_guest' => true,
         ]);
     }
 
-    /**
-     * Crear sesión de Stripe Checkout con items del carrito
-     */
-    #[Route('/create-session', name: 'checkout_create_session', methods: ['POST'])]
-    public function createSession(): JsonResponse
+    #[Route('/api/checkout/create-session', name: 'api_checkout_create_session', methods: ['POST'])]
+    public function createSession(Request $request): Response
     {
-        if (!$this->apiService->isAuthenticated()) {
-            return $this->json(['error' => 'No autenticado'], 401);
-        }
+        $data = json_decode($request->getContent(), true);
 
-        if ($this->cartService->isEmpty()) {
+        $this->logger->info('[Checkout API] Session creation requested', [
+            'items_count' => count($data['items'] ?? [])
+        ]);
+
+        if (empty($data['items'])) {
             return $this->json(['error' => 'Carrito vacío'], 400);
         }
 
         try {
-            $userData = $this->apiService->getUserData();
-            $cart = $this->cartService->getCart();
-            $lineItems = [];
+            $cartItems = [];
+            foreach ($data['items'] as $item) {
+                $isbn = $item['isbn'] ?? null;
+                $cantidad = $item['cantidad'] ?? 1;
 
-            foreach ($cart as $item) {
-                $lineItems[] = [
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => $item['titulo'],
-                            'description' => 'Por ' . $item['autor'],
-                            'images' => $item['imagen'] ? [$item['imagen']] : [],
-                        ],
-                        'unit_amount' => (int) ($item['precio'] * 100),
-                    ],
-                    'quantity' => $item['cantidad'],
+                if (!$isbn) {
+                    $this->logger->warning('[Checkout API] Item without ISBN', $item);
+                    continue;
+                }
+                $book = $this->googleBooksService->getBookByIsbn($isbn);
+
+                if (!$book || $book['precio'] === null || $book['precio'] <= 0) {
+                    $this->logger->warning('[Checkout API] Book not found or no price', ['isbn' => $isbn]);
+                    continue;
+                }
+
+                $cartItems[] = [
+                    'isbn' => $isbn,
+                    'titulo' => $book['titulo'],
+                    'autor' => $book['autor'],
+                    'imagen' => $book['imagen'],
+                    'precio' => $book['precio'],
+                    'moneda' => $book['moneda'],
+                    'cantidad' => $cantidad,
                 ];
             }
 
-            $shippingCost = $this->cartService->getShippingCost();
-            if ($shippingCost > 0) {
-                $lineItems[] = [
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => 'Envío',
-                            'description' => 'Entrega a domicilio (3-5 días)',
-                        ],
-                        'unit_amount' => (int) ($shippingCost * 100),
-                    ],
-                    'quantity' => 1,
-                ];
+            if (empty($cartItems)) {
+                return $this->json([
+                    'error' => 'No hay items válidos para procesar'
+                ], 400);
             }
 
-            $session = Session::create([
-                'payment_method_types' => ['card'],
-                'line_items' => $lineItems,
-                'mode' => 'payment',
-                'success_url' => $this->generateUrl('checkout_success', [
-                    'session_id' => '{CHECKOUT_SESSION_ID}'
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
-                'cancel_url' => $this->generateUrl('checkout_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                'customer_email' => $userData['email'] ?? null,
-                'shipping_address_collection' => [
-                    'allowed_countries' => ['US', 'CA', 'MX', 'PE', 'CO', 'AR', 'CL', 'ES'],
-                ],
-                'metadata' => [
-                    'user_email' => $userData['email'] ?? '',
-                    'order_id' => uniqid('order_', true),
-                ],
+            $sessionId = $this->stripeService->createCheckoutSession(
+                $cartItems,
+                $this->generateUrl('api_checkout_success', [], true),
+                $this->generateUrl('api_checkout_cancel', [], true)
+            );
+
+            $this->logger->info('[Checkout API] Session created successfully', [
+                'session_id' => $sessionId,
+                'items' => count($cartItems)
             ]);
 
             return $this->json([
-                'id' => $session->id,
-                'url' => $session->url
+                'success' => true,
+                'sessionId' => $sessionId
             ]);
 
         } catch (\Exception $e) {
+            $this->logger->error('[Checkout API] Failed to create session', [
+                'error' => $e->getMessage()
+            ]);
+
             return $this->json([
-                'error' => 'Error al crear sesión: ' . $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Página de éxito
-     */
-    #[Route('/success', name: 'checkout_success')]
+    #[Route('/api/checkout/success', name: 'api_checkout_success')]
     public function success(Request $request): Response
     {
-        $sessionId = $request->query->get('session_id');
-        $this->cartService->clearCart();
+        $this->logger->info('[Checkout API] Payment successful');
 
-        $this->addFlash('success', '¡Pago realizado con éxito! Gracias por tu compra.');
+        $request->getSession()->remove('cart');
 
-        return $this->render('checkout/success.html.twig', [
-            'sessionId' => $sessionId
+        return $this->json([
+            'success' => true,
+            'message' => 'Pago completado exitosamente'
         ]);
     }
 
-    /**
-     * Página de cancelación
-     */
-    #[Route('/cancel', name: 'checkout_cancel')]
+    #[Route('/api/checkout/cancel', name: 'api_checkout_cancel')]
     public function cancel(): Response
     {
-        $this->addFlash('warning', 'Pago cancelado. Tu carrito sigue disponible.');
-        return $this->redirectToRoute('cart_index');
+        $this->logger->warning('[Checkout API] Payment cancelled');
+
+        return $this->json([
+            'success' => false,
+            'message' => 'Pago cancelado'
+        ]);
     }
 }

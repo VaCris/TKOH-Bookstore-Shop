@@ -1,10 +1,10 @@
-(function() {
+(function () {
     'use strict';
 
     const MAX_QUANTITY = 10;
     const MIN_QUANTITY = 1;
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log('[Detail] Initializing page components');
 
         initQuantitySelector();
@@ -23,21 +23,21 @@
 
         if (!quantityInput || !decreaseBtn || !increaseBtn) return;
 
-        decreaseBtn.addEventListener('click', function() {
+        decreaseBtn.addEventListener('click', function () {
             let value = parseInt(quantityInput.value);
             if (value > MIN_QUANTITY) {
                 quantityInput.value = value - 1;
             }
         });
 
-        increaseBtn.addEventListener('click', function() {
+        increaseBtn.addEventListener('click', function () {
             let value = parseInt(quantityInput.value);
             if (value < MAX_QUANTITY) {
                 quantityInput.value = value + 1;
             }
         });
 
-        quantityInput.addEventListener('change', function() {
+        quantityInput.addEventListener('change', function () {
             let value = parseInt(this.value);
             if (isNaN(value) || value < MIN_QUANTITY) {
                 this.value = MIN_QUANTITY;
@@ -51,7 +51,7 @@
         const shareButtons = document.querySelectorAll('[data-share]');
 
         shareButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', function (e) {
                 e.preventDefault();
                 const platform = this.dataset.share;
                 const url = encodeURIComponent(window.location.href);
@@ -59,7 +59,7 @@
 
                 let shareUrl = '';
 
-                switch(platform) {
+                switch (platform) {
                     case 'facebook':
                         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
                         break;
@@ -83,13 +83,13 @@
         const nativeShareBtn = document.getElementById('native-share');
         if (nativeShareBtn && navigator.share) {
             nativeShareBtn.style.display = 'inline-block';
-            nativeShareBtn.addEventListener('click', async function() {
+            nativeShareBtn.addEventListener('click', async function () {
                 try {
                     await navigator.share({
                         title: document.title,
                         url: window.location.href
                     });
-                } catch(err) {
+                } catch (err) {
                     console.log('[Share] Native share cancelled or failed');
                 }
             });
@@ -101,7 +101,7 @@
 
         if (!addToCartBtn) return;
 
-        addToCartBtn.addEventListener('click', function() {
+        addToCartBtn.addEventListener('click', function () {
             const isbn = this.dataset.isbn;
             const quantity = parseInt(document.getElementById('quantity').value);
 
@@ -131,41 +131,42 @@
             },
             body: JSON.stringify({ isbn: isbn, quantity: quantity })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateCartBadge();
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartBadge();
 
-                if (typeof showToast !== 'undefined') {
-                    showToast(`${quantity} book(s) added to cart`, 'success');
-                }
+                    if (typeof showToast !== 'undefined') {
+                        showToast(`${quantity} libro(s) agregado(s) al carrito`, 'success');
+                    }
 
-                document.getElementById('quantity').value = MIN_QUANTITY;
+                    document.getElementById('quantity').value = MIN_QUANTITY;
 
-                button.classList.add('btn-success');
-                button.innerHTML = '<i class="bi bi-check-lg"></i> Added';
+                    button.classList.add('btn-success');
+                    button.innerHTML = '<i class="bi bi-check-lg"></i> Agregado';
 
-                setTimeout(() => {
-                    button.classList.remove('btn-success');
+                    setTimeout(() => {
+                        button.classList.remove('btn-success');
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    if (typeof showToast !== 'undefined') {
+                        showToast(data.message || 'Error al agregar al carrito', 'danger');
+                    }
                     button.innerHTML = originalContent;
                     button.disabled = false;
-                }, 2000);
-            } else {
+                }
+            })
+            .catch(error => {
+                console.error('[Cart] Error al agregar:', error);
                 if (typeof showToast !== 'undefined') {
-                    showToast(data.message || 'Failed to add to cart', 'danger');
+                    showToast('Error de conexión', 'danger');
                 }
                 button.innerHTML = originalContent;
                 button.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('[Cart] Add failed:', error);
-            if (typeof showToast !== 'undefined') {
-                showToast('Connection error', 'danger');
-            }
-            button.innerHTML = originalContent;
-            button.disabled = false;
-        });
+            });
+
     }
 
     function updateCartBadge() {
@@ -199,7 +200,7 @@
         const image = document.querySelector('.book-main-image');
         if (!image) return;
 
-        image.addEventListener('click', function() {
+        image.addEventListener('click', function () {
             const modal = document.createElement('div');
             modal.className = 'modal fade';
             modal.innerHTML = `
@@ -217,7 +218,7 @@
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
 
-            modal.addEventListener('hidden.bs.modal', function() {
+            modal.addEventListener('hidden.bs.modal', function () {
                 modal.remove();
             });
         });
@@ -229,7 +230,7 @@
         if (currencyRadios.length === 0) return;
 
         currencyRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
+            radio.addEventListener('change', function () {
                 toggleCurrency(this.id.includes('usd'));
             });
         });

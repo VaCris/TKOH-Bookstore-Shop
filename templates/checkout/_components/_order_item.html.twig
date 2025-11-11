@@ -1,0 +1,21 @@
+<div class="d-flex align-items-center mb-3 pb-3 border-bottom" data-isbn="{{ item.isbn }}">
+    <img
+        src="{{ item.imagen }}"
+        alt="{{ item.titulo }}"
+        class="rounded me-3"
+        style="width: 60px; height: 90px; object-fit: cover;"
+        onerror="this.src='/images/200x300-placeholder.jpg'"
+    >
+    <div class="flex-grow-1">
+        <h6 class="mb-1">{{ item.titulo }}</h6>
+        <small class="text-muted">{{ item.autor }}</small>
+        <p class="mb-0 mt-1">
+            {{ item.cantidad }} ×
+            {% set prices = both_prices(item.precio, item.moneda) %}
+            {{ prices.usd_formatted }}
+        </p>
+    </div>
+    <div class="text-end">
+        <strong>${{ (item.precio * item.cantidad)|number_format(2) }}</strong>
+    </div>
+</div>

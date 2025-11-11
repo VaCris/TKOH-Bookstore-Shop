@@ -67,6 +67,13 @@ class CartController extends AbstractController
             ], 404);
         }
 
+        if ($book['precio'] === null || $book['precio'] === 0) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Este libro no está disponible para su compra'
+            ], 409);
+        }
+
         $this->cartService->addItem($book, $quantity);
 
         return $this->json([

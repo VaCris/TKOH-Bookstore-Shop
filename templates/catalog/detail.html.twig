@@ -12,7 +12,6 @@
 <div class="container my-5">
     <div class="row">
 
-        {# Left Column: Book Image #}
         <div class="col-lg-5 mb-4">
             <div class="book-detail-image-container">
                 <img src="{{ book.imagenGrande ?? book.imagen }}"
@@ -20,7 +19,6 @@
                      class="book-main-image img-fluid"
                      onerror="this.src='/images/200x300-placeholder.jpg'">
 
-                {# Thumbnail Gallery (if multiple images) #}
                 {% if book.imagenes is defined and book.imagenes|length > 1 %}
                     <div class="thumbnail-gallery mt-3">
                         {% for imagen in book.imagenes %}
@@ -34,21 +32,18 @@
             </div>
         </div>
 
-        {# Right Column: Book Information #}
         <div class="col-lg-7">
             {% include 'catalog/_components/_book_detail_info.html.twig' with {'book': book} %}
         </div>
 
     </div>
 
-    {# Tabs: Description, Details, Reviews #}
     <div class="row mt-5">
         <div class="col-12">
             {% include 'catalog/_components/_book_detail_tabs.html.twig' with {'book': book} %}
         </div>
     </div>
 
-    {# Related Books Section #}
     {% if relatedBooks is defined and relatedBooks|length > 0 %}
         <div class="row mt-5">
             <div class="col-12">
@@ -57,7 +52,6 @@
         </div>
     {% endif %}
 
-    {# Last Viewed Section #}
     <div class="row mt-5">
         <div class="col-12">
             {% include 'catalog/_components/_last_viewed_section.html.twig' %}
@@ -70,9 +64,11 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="/js/detail.js"></script>
+    <script src="/js/pages/detail.js"></script>
 
     <script>
+        {% set prices = both_prices(book.precio, book.moneda) %}
+
         if (typeof saveLastViewedBook !== 'undefined') {
             saveLastViewedBook({
                 isbn: '{{ book.isbn }}',
@@ -80,7 +76,7 @@
                 author: '{{ book.autor|e('js') }}',
                 category: '{{ book.categoria|default('')|e('js') }}',
                 image: '{{ book.imagen }}',
-                price: '{% set prices = both_prices(book.precio, book.moneda) %}{{ prices.usd_formatted }}',
+                price: '{{ prices.usd_formatted }}',
                 priceAlt: '{{ prices.pen_formatted }}',
                 url: '{{ path('catalog_book_detail', {isbn: book.isbn}) }}'
             });

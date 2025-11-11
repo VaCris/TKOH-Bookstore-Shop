@@ -1,10 +1,10 @@
-(function() {
+(function () {
     'use strict';
 
     const CART_ADD_URL = '/carrito/agregar';
     const CART_COUNT_URL = '/carrito/count';
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log('[App] Initializing global components');
 
         initTooltips();
@@ -17,14 +17,14 @@
 
     function initTooltips() {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function(tooltipTriggerEl) {
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     }
 
     function initPopovers() {
         const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-        popoverTriggerList.map(function(popoverTriggerEl) {
+        popoverTriggerList.map(function (popoverTriggerEl) {
             return new bootstrap.Popover(popoverTriggerEl);
         });
     }
@@ -139,11 +139,11 @@
     async function copyToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text);
-            showToast('Copied to clipboard', 'success');
+            showToast('Copiado al portapapeles', 'success');
             return true;
         } catch (err) {
-            console.error('[Clipboard] Copy failed:', err);
-            showToast('Copy failed', 'danger');
+            console.error('[Portapapeles] Error al copiar:', err);
+            showToast('Error al copiar', 'danger');
             return false;
         }
     }

@@ -291,20 +291,10 @@
     border-radius: var(--radius-md);
 }
 
-/**
- * ===================================
- * BOOK SECTIONS - PROFESSIONAL DESIGN
- * ===================================
- */
-
- .category-section-modern {
+.category-section-modern {
     margin-bottom: var(--spacing-3xl);
     position: relative;
 }
-
-/* ===================================
-   SECTION HEADER
-   =================================== */
 
 .section-header-pro {
     display: flex;
@@ -359,10 +349,6 @@
     transform: translateX(5px);
 }
 
-/* ===================================
-   BOOKS SCROLL CONTAINER
-   =================================== */
-
 .books-scroll-container {
     position: relative;
     padding: 0 60px;
@@ -372,12 +358,15 @@
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
 }
 
 .books-scroll-wrapper-pro::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
 }
 
 .books-grid-scroll {
@@ -385,10 +374,6 @@
     gap: var(--spacing-xl);
     padding: var(--spacing-md) 0;
 }
-
-/* ===================================
-   SCROLL BUTTONS
-   =================================== */
 
 .scroll-btn {
     position: absolute;
@@ -425,10 +410,6 @@
     right: 0;
 }
 
-/* ===================================
-   BOOK CARD PROFESSIONAL
-   =================================== */
-
 .book-card-pro {
     flex: 0 0 240px;
     width: 240px;
@@ -449,10 +430,6 @@
     transform: translateY(-8px);
     box-shadow: var(--shadow-xl);
 }
-
-/* ===================================
-   BOOK IMAGE
-   =================================== */
 
 .book-image-wrapper {
     position: relative;
@@ -488,14 +465,10 @@
     letter-spacing: 0.5px;
 }
 
-/* ===================================
-   OVERLAY ACTIONS
-   =================================== */
-
 .book-overlay-actions {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -543,10 +516,6 @@
     transform: scale(1.1);
 }
 
-/* ===================================
-   BOOK INFO
-   =================================== */
-
 .book-info-pro {
     padding: var(--spacing-lg);
     display: flex;
@@ -586,10 +555,6 @@
     text-overflow: ellipsis;
 }
 
-/* ===================================
-   RATING
-   =================================== */
-
 .book-rating-pro {
     display: flex;
     align-items: center;
@@ -604,10 +569,7 @@
     font-size: var(--text-xs);
 }
 
-/* ===================================
-   PRICE
-   =================================== */
-
+/* PRICE */
 .book-price-pro {
     margin-top: auto;
     padding-top: var(--spacing-md);
@@ -627,9 +589,44 @@
     color: var(--medium-gray);
 }
 
-/* ===================================
-   SCROLL INDICATORS
-   =================================== */
+.book-price-not-for-sale {
+    margin-top: auto;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-gray);
+    text-align: center;
+}
+
+.not-for-sale-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--medium-gray) 0%, var(--dark-gray) 100%);
+    color: var(--secondary-white);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.not-for-sale-section {
+    padding: var(--spacing-xl);
+    background: var(--light-gray);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.not-for-sale-section .alert {
+    margin-bottom: var(--spacing-lg);
+    border-left: 4px solid var(--accent-orange);
+}
+
+.not-for-sale-section .alert i {
+    font-size: var(--text-2xl);
+    color: var(--accent-orange);
+    margin-right: var(--spacing-sm);
+}
+
+/* SCROLL INDICATORS */
 
 .scroll-indicators {
     display: flex;
@@ -652,9 +649,7 @@
     background: var(--primary-yellow);
 }
 
-/* ===================================
-   NO BOOKS MESSAGE
-   =================================== */
+/* NO BOOKS MESSAGE */
 
 .no-books-message {
     width: 100%;
@@ -669,9 +664,7 @@
     margin-bottom: var(--spacing-md);
 }
 
-/* ===================================
-   RESPONSIVE
-   =================================== */
+/* RESPONSIVE */
 
 @media (max-width: 1200px) {
     .book-card-pro {

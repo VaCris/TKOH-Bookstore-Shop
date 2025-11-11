@@ -50,64 +50,56 @@
         document.addEventListener('cart:updated', updateCartBadge);
     }
 
-    window.addToCart = function(isbn) {
-        const button = event?.target?.closest('button');
-        const originalContent = button ? button.innerHTML : '';
+    window.addToCart = (isbn) => {
+        const cart = {
+            addBook: async (isbn) => {
+                const button = event?.target?.closest('button');
+                const originalContent = button ? button.innerHTML : '';
 
-        if (button) {
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                UIModule.loading(button, true);
+
+                try {
+                    const response = await APIModule.post('/carrito/agregar', {
+                        isbn,
+                        quantity: 1
+                    });
+
+                    if (response.success) {
+                        await updateCartBadge();
+                        UIModule.showToast('Libro agregado al carrito', 'success');
+                        document.dispatchEvent(new CustomEvent('cart:updated', { detail: { isbn } }));
+                    } else {
+                        UIModule.showToast(response.message || 'Error al agregar', 'danger');
+                    }
+                } catch (error) {
+                    console.error('[Cart] Error:', error);
+                    UIModule.showToast('Error de conexión', 'danger');
+                } finally {
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = originalContent;
+                    }
+                }
+            }
+        };
+
+        cart.addBook(isbn);
+    };
+
+    async function updateCartBadge() {
+        try {
+            const data = await APIModule.get('/carrito/count');
+            const badge = document.querySelector('#cart-badge');
+
+            if (badge) {
+                badge.textContent = data.count || 0;
+                badge.style.display = data.count > 0 ? 'flex' : 'none';
+                badge.classList.add('pulse-once');
+                setTimeout(() => badge.classList.remove('pulse-once'), 500);
+            }
+        } catch (error) {
+            console.error('[Cart] Error updating badge:', error);
         }
-
-        fetch('/carrito/agregar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ isbn: isbn, quantity: 1 })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateCartBadge();
-                if (typeof showToast !== 'undefined') {
-                    showToast('Book added to cart successfully', 'success');
-                }
-                document.dispatchEvent(new CustomEvent('cart:updated', { detail: { isbn: isbn } }));
-            } else {
-                if (typeof showToast !== 'undefined') {
-                    showToast(data.message || 'Error adding book to cart', 'danger');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('[Cart] Error adding item:', error);
-            if (typeof showToast !== 'undefined') {
-                showToast('Connection error', 'danger');
-            }
-        })
-        .finally(() => {
-            if (button) {
-                button.disabled = false;
-                button.innerHTML = originalContent;
-            }
-        });
-    }
-
-    function updateCartBadge() {
-        fetch('/carrito/count')
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('cart-badge');
-                if (badge) {
-                    badge.textContent = data.count || 0;
-                    badge.style.display = data.count > 0 ? 'flex' : 'none';
-                    badge.classList.add('pulse-once');
-                    setTimeout(() => badge.classList.remove('pulse-once'), 500);
-                }
-            })
-            .catch(error => console.error('[Cart] Error updating badge:', error));
     }
 
     function initLazyLoading() {

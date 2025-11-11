@@ -14,6 +14,11 @@ class CatalogController extends AbstractController
     private GoogleBooksService $googleBooks;
     private LoggerInterface $logger;
 
+    private const ITEMS_PER_PAGE = 20;
+    private const MAX_PAGES = 5;
+    private const FEATURED_ITEMS = 5;
+    private const CATEGORY_ITEMS = 10;
+
     public function __construct(
         GoogleBooksService $googleBooks,
         LoggerInterface $logger
@@ -22,109 +27,47 @@ class CatalogController extends AbstractController
         $this->logger = $logger;
     }
 
-    /**
-     * Página principal - Catálogo de libros
-     */
     #[Route('/', name: 'catalog_index')]
     public function index(Request $request): Response
     {
-        $page = max(0, (int) $request->query->get('page', 0));
-        $size = 10;
-        $search = $request->query->get('search');
-        $category = $request->query->get('categoria');
+        $this->logger->info('[Catalog] Index page accessed');
 
-        if ($search || $category) {
-            return $this->searchResults($request, $search, $category, $page);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $search = $request->query->get('q', '') ?: $request->query->get('search', '');
+        $category = $request->query->get('categoria', '');
+
+        if (!empty($search)) {
+            $this->logger->info('[Catalog] Search query received', ['query' => $search]);
+            return $this->performSearch($search, $page);
         }
 
-        $featuredResult = $this->googleBooks->searchBooks('bestseller', 0, 5);
-        $featuredBooks = $featuredResult['items'] ?? [];
-
-        $sections = [
-            'Fiction' => 'Ficción',
-            'Science Fiction' => 'Ciencia Ficción',
-            'Fantasy' => 'Fantasía',
-            'Mystery' => 'Misterio',
-            'Romance' => 'Romance',
-            'Biography' => 'Biografías'
-        ];
-
-        $categorySections = [];
-        foreach ($sections as $categoryKey => $categoryName) {
-            $result = $this->googleBooks->searchBooks("subject:{$categoryKey}", 0, 10);
-            $categorySections[] = [
-                'key' => $categoryKey,
-                'name' => $categoryName,
-                'books' => $result['items'] ?? []
-            ];
+        if (!empty($category)) {
+            $this->logger->info('[Catalog] Category filter applied', ['category' => $category]);
+            return $this->filterByCategory($category, $page);
         }
 
-        return $this->render('catalog/home.html.twig', [
-            'featuredBooks' => $featuredBooks,
-            'sections' => $categorySections,
-            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
-        ]);
+        return $this->showHomepage();
     }
 
-    /**
-     * Resultados de búsqueda (vista tradicional)
-     */
-    private function searchResults(Request $request, ?string $search, ?string $category, int $page): Response
-    {
-        $size = 40;
-
-        if ($category) {
-            $result = $this->googleBooks->getBooksByCategory($category, $page, $size);
-        } else {
-            $result = $this->googleBooks->searchBooks($search, $page * $size, $size);
-        }
-
-        $books = $result['items'] ?? [];
-        $totalItems = $result['totalItems'] ?? 0;
-        $totalPages = $totalItems > 0 ? ceil($totalItems / $size) : 0;
-
-        return $this->render('catalog/search.html.twig', [
-            'books' => $books,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalElements' => $totalItems,
-            'currentSearch' => $search,
-            'currentCategoria' => $category,
-            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
-        ]);
-    }
-
-    /**
-     * Detalle de libro
-     */
     #[Route('/libro/{isbn}', name: 'catalog_book_detail')]
     public function detail(string $isbn): Response
     {
-        $this->logger->info('📖 [CATALOG] Solicitando detalle de libro', ['isbn' => $isbn]);
+        $this->logger->info('[Catalog] Book detail requested', ['isbn' => $isbn]);
 
         $book = $this->googleBooks->getBookByIsbn($isbn);
 
         if (!$book) {
-            $this->logger->warning('⚠️ [CATALOG] Libro no encontrado', ['isbn' => $isbn]);
+            $this->logger->warning('[Catalog] Book not found', ['isbn' => $isbn]);
             $this->addFlash('error', 'Libro no encontrado.');
             return $this->redirectToRoute('catalog_index');
         }
 
-        $this->logger->info('✅ [CATALOG] Libro encontrado', [
+        $this->logger->info('[Catalog] Book found', [
             'isbn' => $isbn,
-            'titulo' => $book['titulo'] ?? 'N/A'
+            'title' => $book['titulo'] ?? 'Unknown'
         ]);
 
-        $relatedBooks = [];
-        if (isset($book['categoria'])) {
-            $this->logger->info('🔍 Buscando libros relacionados', ['categoria' => $book['categoria']]);
-            $result = $this->googleBooks->getBooksByCategory($book['categoria'], 0, 6);
-            $relatedBooks = array_filter($result['items'] ?? [], function ($b) use ($isbn) {
-                return $b['isbn'] !== $isbn;
-            });
-            $relatedBooks = array_slice($relatedBooks, 0, 5);
-            $this->logger->info('📚 Libros relacionados encontrados', ['count' => count($relatedBooks)]);
-        }
+        $relatedBooks = $this->getRelatedBooks($book);
 
         return $this->render('catalog/detail.html.twig', [
             'book' => $book,
@@ -132,36 +75,31 @@ class CatalogController extends AbstractController
         ]);
     }
 
-    /**
-     * Búsqueda
-     */
     #[Route('/buscar', name: 'catalog_search', methods: ['GET'])]
     public function search(Request $request): Response
     {
-        $query = $request->query->get('q');
+        $query = $request->query->get('q', '') ?: $request->query->get('search', '');
 
-        $this->logger->info('🔍 [CATALOG] Búsqueda iniciada', ['query' => $query]);
+        $this->logger->info('[Catalog] Search initiated', ['query' => $query]);
 
-        if (!$query) {
-            $this->logger->warning('⚠️ [CATALOG] Búsqueda vacía, redirigiendo');
+        if (strlen(trim($query)) < 2) {
+            $this->logger->warning('[Catalog] Search query too short', [
+                'query' => $query,
+                'length' => strlen($query)
+            ]);
+            $this->addFlash('warning', 'Por favor ingresa al menos 2 caracteres.');
             return $this->redirectToRoute('catalog_index');
         }
 
-        // ✅ CORRECCIÓN: Redirigir con 'search' en lugar de 'q'
-        return $this->redirectToRoute('catalog_index', [
-            'search' => $query
-        ]);
+        return $this->redirectToRoute('catalog_index', ['q' => $query]);
     }
 
-    /**
-     * Listar por categoría
-     */
     #[Route('/categoria/{category}', name: 'catalog_by_category')]
     public function byCategory(string $category, Request $request): Response
     {
-        $page = max(0, (int) $request->query->get('page', 0));
+        $page = max(1, (int) $request->query->get('page', 1));
 
-        $this->logger->info('📚 [CATALOG] Navegando a categoría', [
+        $this->logger->info('[Catalog] Category navigation', [
             'category' => $category,
             'page' => $page
         ]);
@@ -172,15 +110,196 @@ class CatalogController extends AbstractController
         ]);
     }
 
-    /**
-     * Formatear categorías para el selector
-     */
+    private function showHomepage(): Response
+    {
+        $this->logger->info('[Catalog] Loading homepage');
+
+        $featuredResult = $this->googleBooks->searchBooks('bestseller', 0, self::FEATURED_ITEMS);
+        $featuredBooks = $featuredResult['items'] ?? [];
+
+        $categories = [
+            'Fiction' => 'Ficción',
+            'Science Fiction' => 'Ciencia Ficción',
+            'Fantasy' => 'Fantasía',
+            'Mystery' => 'Misterio',
+            'Romance' => 'Romance',
+            'Biography' => 'Biografías'
+        ];
+
+        $categorySections = [];
+        foreach ($categories as $categoryKey => $categoryName) {
+            $result = $this->googleBooks->getBooksByCategory($categoryKey, 0, self::CATEGORY_ITEMS);
+            $categorySections[] = [
+                'key' => $categoryKey,
+                'name' => $categoryName,
+                'books' => $result['items'] ?? []
+            ];
+        }
+
+        $this->logger->debug('[Catalog] Homepage sections loaded', [
+            'sections' => count($categorySections)
+        ]);
+
+        return $this->render('catalog/home.html.twig', [
+            'featuredBooks' => $featuredBooks,
+            'sections' => $categorySections,
+            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
+        ]);
+    }
+
+    private function performSearch(string $query, int $page): Response
+    {
+        $this->logger->info('[Catalog] Performing search', [
+            'query' => $query,
+            'page' => $page
+        ]);
+
+        $startIndex = ($page - 1) * self::ITEMS_PER_PAGE;
+        $result = $this->googleBooks->searchBooks($query, $startIndex, self::ITEMS_PER_PAGE);
+        $books = $result['items'] ?? [];
+
+        if ($page > 1 && empty($books)) {
+            $this->logger->warning('[Catalog] No results on requested page', [
+                'query' => $query,
+                'page' => $page
+            ]);
+
+            return $this->render('catalog/search.html.twig', [
+                'books' => [],
+                'search' => $query,
+                'page' => $page,
+                'totalPages' => $page - 1,
+                'totalItems' => 0,
+                'error' => 'No hay más resultados disponibles en esta búsqueda.',
+            ]);
+        }
+
+        if (empty($books)) {
+            $this->logger->info('[Catalog] No results found', ['query' => $query]);
+
+            return $this->render('catalog/search.html.twig', [
+                'books' => [],
+                'search' => $query,
+                'page' => 1,
+                'totalPages' => 0,
+                'totalItems' => 0,
+                'error' => 'No se encontraron resultados para tu búsqueda.',
+            ]);
+        }
+
+        $totalPages = self::MAX_PAGES;
+
+        $this->logger->info('[Catalog] Search completed', [
+            'query' => $query,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'resultsCount' => count($books)
+        ]);
+
+        return $this->render('catalog/search.html.twig', [
+            'books' => $books,
+            'search' => $query,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => count($books),
+            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
+        ]);
+    }
+
+    private function filterByCategory(string $category, int $page): Response
+    {
+        $this->logger->info('[Catalog] Filtering by category', [
+            'category' => $category,
+            'page' => $page
+        ]);
+
+        $startIndex = ($page - 1) * self::ITEMS_PER_PAGE;
+        $result = $this->googleBooks->getBooksByCategory($category, $startIndex, self::ITEMS_PER_PAGE);
+        $books = $result['items'] ?? [];
+
+        if ($page > 1 && empty($books)) {
+            $this->logger->warning('[Catalog] No results on page for category', [
+                'category' => $category,
+                'page' => $page
+            ]);
+
+            return $this->render('catalog/search.html.twig', [
+                'books' => [],
+                'category' => $category,
+                'page' => $page,
+                'totalPages' => $page - 1,
+                'totalItems' => 0,
+                'error' => 'No hay más libros en esta categoría.',
+            ]);
+        }
+
+        if (empty($books)) {
+            $this->logger->info('[Catalog] No results for category', ['category' => $category]);
+
+            return $this->render('catalog/search.html.twig', [
+                'books' => [],
+                'category' => $category,
+                'page' => 1,
+                'totalPages' => 0,
+                'totalItems' => 0,
+                'error' => 'No hay libros en esta categoría.',
+            ]);
+        }
+
+        $totalPages = self::MAX_PAGES;
+
+        $this->logger->info('[Catalog] Category filter completed', [
+            'category' => $category,
+            'page' => $page,
+            'totalPages' => $totalPages
+        ]);
+
+        return $this->render('catalog/search.html.twig', [
+            'books' => $books,
+            'category' => $category,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => count($books),
+            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
+        ]);
+    }
+
+    private function calculateRealTotal(string $query): int
+    {
+        $this->logger->debug('[Catalog] Calculating real total', ['query' => $query]);
+        return self::MAX_PAGES * self::ITEMS_PER_PAGE;
+    }
+
+    private function getRelatedBooks(array $book): array
+    {
+        if (empty($book['categoria'])) {
+            return [];
+        }
+
+        $this->logger->debug('[Catalog] Looking for related books', [
+            'category' => $book['categoria']
+        ]);
+
+        $result = $this->googleBooks->getBooksByCategory($book['categoria'], 0, 8);
+        $relatedBooks = array_filter($result['items'] ?? [], function ($b) use ($book) {
+            return $b['isbn'] !== $book['isbn'];
+        });
+
+        $relatedBooks = array_slice($relatedBooks, 0, 6);
+
+        $this->logger->debug('[Catalog] Related books found', [
+            'count' => count($relatedBooks)
+        ]);
+
+        return $relatedBooks;
+    }
+
     private function formatCategories(array $categories): array
     {
-        return array_map(function ($cat, $index) {
+        return array_map(function ($category, $index) {
             return [
                 'id' => $index + 1,
-                'nombre' => $cat
+                'nombre' => $category
             ];
         }, $categories, array_keys($categories));
     }

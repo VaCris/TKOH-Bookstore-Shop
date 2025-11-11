@@ -1,11 +1,3 @@
-{#
-    Book Detail Info Component
-    Información principal del libro
-
-    Parámetros requeridos:
-    - book: objeto libro completo
-#}
-
 <div class="book-info-section fade-in">
 
     <div class="book-badges">
@@ -26,16 +18,6 @@
                 <i class="bi bi-globe"></i> {{ book.idioma|upper }}
             </span>
         {% endif %}
-
-        {% if book.disponible %}
-            <span class="badge badge-custom bg-success">
-                <i class="bi bi-check-circle-fill"></i> Disponible
-            </span>
-        {% else %}
-            <span class="badge badge-custom bg-warning">
-                <i class="bi bi-clock-fill"></i> Consultar disponibilidad
-            </span>
-        {% endif %}
     </div>
 
     <h1 class="book-title">{{ book.titulo }}</h1>
@@ -44,77 +26,78 @@
         <i class="bi bi-person-fill"></i> {{ book.autor }}
     </p>
 
-    <div class="book-rating mb-3">
-        <span class="text-warning">
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-fill"></i>
-            <i class="bi bi-star-half"></i>
-        </span>
-        <span class="text-muted ms-2">(4.5) • 1,234 valoraciones</span>
-    </div>
-
-    {% set prices = both_prices(book.precio, book.moneda) %}
-    <div class="book-price-container">
-        <div class="currency-selector mb-3">
-            <div class="btn-group btn-group-sm" role="group">
-                <input type="radio" class="btn-check" name="currency-detail" id="currency-usd-detail" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="currency-usd-detail">
-                    <i class="bi bi-currency-dollar"></i> USD
-                </label>
-
-                <input type="radio" class="btn-check" name="currency-detail" id="currency-pen-detail" autocomplete="off">
-                <label class="btn btn-outline-primary" for="currency-pen-detail">
-                    <i class="bi bi-cash"></i> PEN
-                </label>
-            </div>
-        </div>
-
-        <div class="book-price" id="price-display">
-            <span class="price-usd">{{ prices.usd_formatted }}</span>
-            <span class="price-pen" style="display:none;">{{ prices.pen_formatted }}</span>
-        </div>
-    </div>
-
-    {% if book.descripcion %}
-        <div class="book-short-description mb-4">
-            <p class="lead">
-                {{ book.descripcion|slice(0, 200) }}{% if book.descripcion|length > 200 %}...{% endif %}
-            </p>
+    {% if book.rating %}
+        <div class="book-rating">
+            <span class="stars">
+                {% for i in 1..5 %}
+                    <i class="bi bi-star{% if i <= book.rating %}-fill{% endif %} text-warning"></i>
+                {% endfor %}
+            </span>
+            <span class="rating-value">({{ book.rating|number_format(1) }})</span>
+            {% if book.ratings_count %}
+                <small class="text-muted">{{ book.ratings_count }} reseñas</small>
+            {% endif %}
         </div>
     {% endif %}
 
-    <div class="book-actions">
-        <div class="quantity-selector">
-            <button id="decrease-qty" class="btn btn-outline-secondary quantity-btn">
-                <i class="bi bi-dash"></i>
+
+    {% set prices = both_prices(book.precio, book.moneda) %}
+
+    {% if prices.forSale %}
+        {% include 'catalog/_components/_price_converter.html.twig' with {'prices': prices} %}
+
+        {% if book.descripcion %}
+            <div class="book-short-description mb-4">
+                <p class="lead">
+                    {{ book.descripcion|slice(0, 200) }}{% if book.descripcion|length > 200 %}...{% endif %}
+                </p>
+            </div>
+        {% endif %}
+
+        <div class="book-actions">
+            <div class="quantity-selector">
+                <button id="decrease-qty" class="btn btn-outline-secondary quantity-btn">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <input type="number" id="quantity" class="form-control quantity-input" value="1" min="1" max="10" readonly>
+                <button id="increase-qty" class="btn btn-outline-secondary quantity-btn">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+
+            <button id="add-to-cart-btn" class="btn btn-warning btn-lg flex-grow-1" data-isbn="{{ book.isbn }}">
+                <i class="bi bi-cart-plus"></i> Añadir al carrito
             </button>
-            <input type="number"
-                   id="quantity"
-                   class="form-control quantity-input"
-                   value="1"
-                   min="1"
-                   max="10"
-                   readonly>
-            <button id="increase-qty" class="btn btn-outline-secondary quantity-btn">
-                <i class="bi bi-plus"></i>
+
+            <button class="btn btn-outline-danger btn-lg" title="Añadir a la lista de deseos">
+                <i class="bi bi-heart"></i>
             </button>
         </div>
 
-        <button id="add-to-cart-btn"
-                class="btn btn-warning btn-lg flex-grow-1"
-                data-isbn="{{ book.isbn }}">
-            <i class="bi bi-cart-plus"></i> Agregar al Carrito
-        </button>
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-truck"></i>
+            <strong>Envío gratuito</strong> en pedidos superiores a 50 $
+        </div>
 
-        <button class="btn btn-outline-danger btn-lg" title="Agregar a favoritos">
-            <i class="bi bi-heart"></i>
-        </button>
-    </div>
+    {% else %}
+        <div class="not-for-sale-section">
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>NOT FOR SALE</strong>
+                <p class="mb-0">Este libro no está disponible para su compra en este momento</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-lg w-100" disabled>
+                <i class="bi bi-cart-x"></i> No disponible
+            </button>
+        </div>
 
-    <div class="alert alert-info mt-4">
-        <i class="bi bi-truck"></i> <strong>Envío gratis</strong> en pedidos mayores a $50
-    </div>
+        {% if book.descripcion %}
+            <div class="book-short-description mb-4 mt-4">
+                <p class="lead">
+                    {{ book.descripcion|slice(0, 200) }}{% if book.descripcion|length > 200 %}...{% endif %}
+                </p>
+            </div>
+        {% endif %}
+    {% endif %}
 
 </div>

@@ -90,11 +90,18 @@
 
                                 {# Precio #}
                                 {% set prices = both_prices(book.precio, book.moneda) %}
-                                <div class="book-price-pro">
-                                    <div class="price-main">{{ prices.usd_formatted }}</div>
-                                    <div class="price-alt">{{ prices.pen_formatted }}</div>
-                                </div>
-
+                                {% if prices.forSale %}
+                                    <button class="btn-quick-cart"
+                                            onclick="addToCart('{{ book.isbn }}')">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                {% else %}
+                                    <button class="btn-quick-cart disabled"
+                                            title="Not available for purchase"
+                                            disabled>
+                                        <i class="bi bi-cart-x"></i>
+                                    </button>
+                                {% endif %}
                             </div>
 
                         </div>

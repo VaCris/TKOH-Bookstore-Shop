@@ -35,7 +35,7 @@ class CurrencyExtension extends AbstractExtension
 
     /**
      * Formatear precio con moneda
-     * Uso: {{ 25.99|currency('USD') }}
+     *
      */
     public function formatCurrency(float $amount, string $currency = 'PEN'): string
     {
@@ -44,7 +44,7 @@ class CurrencyExtension extends AbstractExtension
 
     /**
      * Convertir a PEN y formatear
-     * Uso: {{ 25.99|to_pen }}
+     *
      */
     public function toPen(float $amount): string
     {
@@ -54,7 +54,7 @@ class CurrencyExtension extends AbstractExtension
 
     /**
      * Convertir a USD y formatear
-     * Uso: {{ 95.00|to_usd }}
+     *
      */
     public function toUsd(float $amount): string
     {
@@ -65,19 +65,29 @@ class CurrencyExtension extends AbstractExtension
     /**
      * Obtener precio en ambas monedas
      */
-    public function getBothPrices(float $amount, string $fromCurrency = 'USD'): array
+    public function getBothPrices(?float $amount, string $fromCurrency = 'USD'): array
     {
-        return $this->converter->getBothPrices($amount, $fromCurrency);
+        if ($amount === null || $amount === 0) {
+            return [
+                'usd_formatted' => 'NOT FOR SALE',
+                'pen_formatted' => 'NO EN VENTA',
+                'usd_value' => null,
+                'pen_value' => null,
+                'forSale' => false,
+            ];
+        }
+
+        return $this->converter->getBothPrices($amount, $fromCurrency) + ['forSale' => true];
     }
 
     /**
      * Obtener tasa SUNAT
-     */
-    public function getSunatRate(string $type = 'compra'): float
-    {
-        if ($type === 'venta') {
-            return $this->converter->getVentaRate();
-        }
-        return $this->converter->getCompraRate();
-    }
+     * */
+    // public function getSunatRate(string $type = 'compra'): float
+    // {
+    //     if ($type === 'venta') {
+    //         return $this->converter->getVentaRate();
+    //     }
+    //     return $this->converter->getCompraRate();
+    // }*/
 }

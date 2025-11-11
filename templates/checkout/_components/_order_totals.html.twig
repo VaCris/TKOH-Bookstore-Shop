@@ -1,0 +1,19 @@
+<div class="d-flex justify-content-between mb-2">
+    <span>Subtotal:</span>
+    <strong>${{ subtotal|number_format(2) }}</strong>
+</div>
+<div class="d-flex justify-content-between mb-2">
+    <span>Envío:</span>
+    <strong class="{% if shipping == 0 %}text-success{% endif %}">
+        {% if shipping == 0 %}
+            GRATIS
+        {% else %}
+            ${{ shipping|number_format(2) }}
+        {% endif %}
+    </strong>
+</div>
+<hr>
+<div class="d-flex justify-content-between">
+    <h5>Total:</h5>
+    <h4 class="text-success">${{ total|number_format(2) }}</h4>
+</div>

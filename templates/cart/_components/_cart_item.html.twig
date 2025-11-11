@@ -1,0 +1,53 @@
+<div class="card mb-3 cart-item" data-isbn="{{ item.isbn }}">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">
+                <img src="{{ item.imagen }}"
+                     alt="{{ item.titulo }}"
+                     class="img-fluid"
+                     style="max-height: 100px; object-fit: cover;"
+                     onerror="this.src='/images/200x300-placeholder.jpg'">
+            </div>
+            <div class="col-md-5">
+                <h6 class="card-title mb-1">{{ item.titulo }}</h6>
+                <p class="text-muted small mb-0">{{ item.autor }}</p>
+                <a href="{{ path('catalog_book_detail', {isbn: item.isbn}) }}"
+                   class="btn btn-sm btn-link p-0 mt-2">
+                    Ver detalles
+                </a>
+            </div>
+            <div class="col-md-2">
+                <p class="text-muted small mb-2">Precio unitario</p>
+                <p class="h6">
+                    {% set prices = both_prices(item.precio, item.moneda) %}
+                    {{ prices.usd_formatted }}
+                </p>
+            </div>
+            <div class="col-md-2">
+                <p class="text-muted small mb-2">Cantidad</p>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-outline-secondary"
+                            onclick="updateQuantity('{{ item.isbn }}', -1)">
+                        <i class="bi bi-dash"></i>
+                    </button>
+                    <input type="text"
+                           class="form-control text-center"
+                           value="{{ item.cantidad }}"
+                           readonly>
+                    <button class="btn btn-outline-secondary"
+                            onclick="updateQuantity('{{ item.isbn }}', 1)">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-1 text-end">
+                <p class="text-muted small mb-2">Total</p>
+                <p class="h6">{{ ((item.precio * item.cantidad)|number_format(2)) }}</p>
+                <button class="btn btn-sm btn-danger mt-2"
+                        onclick="removeFromCart('{{ item.isbn }}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-credit-card-2-front"></i>
+            Pago Seguro
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if is_guest %}
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle"></i>
+                <strong>Compra como invitado</strong>
+                <p class="mb-0 mt-2">Ingresa tu email para recibir confirmación del pedido.</p>
+            </div>
+
+            <div class="mb-3">
+                <label for="guest-email" class="form-label">Email</label>
+                <input
+                    type="email"
+                    class="form-control"
+                    id="guest-email"
+                    placeholder="tu@email.com"
+                    required
+                >
+            </div>
+        {% endif %}
+
+        <img
+            src="https://stripe.com/img/v3/payments/overview/logos/powered-by-stripe.svg"
+            alt="Powered by Stripe"
+            class="mb-4"
+            style="height: 40px; width: 100%; object-fit: contain;"
+        >
+
+        <p class="text-muted small mb-4">
+            Serás redirigido a Stripe para completar tu pago de forma segura.
+            Podrás ingresar tu dirección de envío y datos de pago.
+        </p>
+
+        <button
+            id="checkout-button"
+            class="btn btn-success btn-lg w-100"
+            onclick="CheckoutModule.submit()"
+            data-stripe-key="{{ stripePublicKey }}"
+        >
+            <i class="bi bi-lock-fill"></i>
+            Proceder al Pago
+        </button>
+
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <i class="bi bi-shield-check text-success"></i>
+                Pago 100% seguro
+            </small>
+        </div>
+
+        {% include 'checkout/_components/_test_cards.html.twig' %}l>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-3">
+    <a href="{{ path('cart_index') }}" class="text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Volver al carrito
+    </a>
+</div>

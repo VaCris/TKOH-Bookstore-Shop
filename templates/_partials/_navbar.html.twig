@@ -79,17 +79,16 @@
             </ul>
 
             {# Buscador #}
-            <form class="search-form me-3" action="{{ path('catalog_index') }}" method="get">
-                <div class="input-group input-group-modern">
-                    <input type="text"
-                           class="form-control border-0"
-                           name="search"
-                           placeholder="Buscar libros, autores..."
-                           value="{{ app.request.query.get('search') }}">
-                    <button class="btn btn-search" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
+            <form method="get" action="{{ path('catalog_index') }}" class="d-flex me-3">
+                <input class="form-control form-control-sm me-2"
+                       type="search"
+                       name="q"
+                       placeholder="Buscar libros..."
+                       aria-label="Buscar"
+                       required>
+                <button class="btn btn-outline-primary btn-sm" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
             </form>
 
             {# User Actions #}

@@ -1,0 +1,19 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-bag-check"></i>
+            Tu Pedido
+        </h5>
+    </div>
+    <div class="card-body">
+        {% for item in cartItems %}
+            {% include 'checkout/_components/_order_item.html.twig' with {item: item} %}
+        {% endfor %}
+
+        {% include 'checkout/_components/_order_totals.html.twig' with {
+            subtotal: subtotal,
+            shipping: shipping,
+            total: total
+        } %}
+    </div>
+</div>
