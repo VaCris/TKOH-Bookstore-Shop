@@ -54,31 +54,3 @@ jobs:
         with:
           name: php-app
           path: .
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: php-app
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0CDBB7E6D66A4FD4B36A8E29F7BB6ECF }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_953907FC98EC4E46A2E803CB5727E9A4 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_900CFBA89236477D8F48404237957240 }}
-
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'tkoh-bookstore-shop'
-          slot-name: 'Production'
-          package: .
