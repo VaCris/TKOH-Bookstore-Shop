@@ -17,11 +17,8 @@ class CurrencyConverterService
     private CacheInterface $cache;
     private LoggerInterface $logger;
 
-    // Predeterminado
     private const DEFAULT_COMPRA = 3.387;
     private const DEFAULT_VENTA = 3.396;
-
-    // API de SUNAT - Tipos de cambio oficiales
     private const SUNAT_API_URL = 'https://api.apis.net.pe/v1/tipo-cambio-sunat';
 
     public function __construct(
