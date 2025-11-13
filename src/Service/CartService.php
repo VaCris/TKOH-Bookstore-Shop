@@ -15,8 +15,6 @@ class CartService
         $this->session = $requestStack->getSession();
     }
 
-    // ==================== AGREGAR AL CARRITO ====================
-
     /**
      * Agregar libro al carrito
      */
@@ -26,10 +24,8 @@ class CartService
         $isbn = $book['isbn'];
 
         if (isset($cart[$isbn])) {
-            // Si ya existe, incrementar cantidad
             $cart[$isbn]['cantidad'] += $quantity;
         } else {
-            // Si no existe, agregar nuevo item
             $cart[$isbn] = [
                 'isbn' => $book['isbn'],
                 'titulo' => $book['titulo'],
@@ -42,8 +38,6 @@ class CartService
 
         $this->saveCart($cart);
     }
-
-    // ==================== ACTUALIZAR CANTIDAD ====================
 
     /**
      * Actualizar cantidad de un item
@@ -58,7 +52,7 @@ class CartService
         }
 
         if ($quantity > 10) {
-            $quantity = 10; // Máximo 10 unidades
+            $quantity = 10;
         }
 
         if (isset($cart[$isbn])) {
@@ -66,8 +60,6 @@ class CartService
             $this->saveCart($cart);
         }
     }
-
-    // ==================== ELIMINAR ITEM ====================
 
     /**
      * Eliminar item del carrito
@@ -81,8 +73,6 @@ class CartService
             $this->saveCart($cart);
         }
     }
-
-    // ==================== OBTENER CARRITO ====================
 
     /**
      * Obtener todo el carrito
@@ -101,8 +91,6 @@ class CartService
         return $cart[$isbn] ?? null;
     }
 
-    // ==================== VACIAR CARRITO ====================
-
     /**
      * Vaciar todo el carrito
      */
@@ -110,8 +98,6 @@ class CartService
     {
         $this->session->remove(self::CART_KEY);
     }
-
-    // ==================== CÁLCULOS ====================
 
     /**
      * Calcular total del carrito
@@ -188,8 +174,6 @@ class CartService
         return round($this->getTotal() + $this->getShippingCost(), 2);
     }
 
-    // ==================== VALIDACIONES ====================
-
     /**
      * Verificar si el carrito está vacío
      */
@@ -207,8 +191,6 @@ class CartService
         return isset($cart[$isbn]);
     }
 
-    // ==================== HELPERS PRIVADOS ====================
-
     /**
      * Guardar carrito en sesión
      */
@@ -218,23 +200,18 @@ class CartService
     }
 
     /**
-     * Extraer precio del libro (de tu API o Google Books)
+     * Extraer precio del libro
      */
     private function extractPrice(array $book): float
     {
-        // Prioridad: precio de tu API > precio de Google Books > default
         if (isset($book['precio']) && is_numeric($book['precio'])) {
             return (float) $book['precio'];
         }
-
-        // Precio por defecto
         return 25.0;
     }
 
-    // ==================== MÉTODOS ÚTILES ====================
-
     /**
-     * Obtener resumen del carrito (para mostrar en navbar, etc.)
+     * Obtener resumen del carrito
      */
     public function getSummary(): array
     {
