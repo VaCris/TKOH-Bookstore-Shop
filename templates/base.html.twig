@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TKOH Bookstore{% endblock %}</title>
-
-    <link rel="icon" type="image/png" href="#">
-
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo_STKH.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/variables.css">
-    <link rel="stylesheet" href="/css/theme.css">
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/footer.css">
-
-    {% block stylesheets %}{% endblock %}
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -29,20 +23,8 @@
     {% include '_partials/_footer.html.twig' %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="//code.tidio.co/xpiryzps8bki7rfmv5gn9uq8u1pvo83c.js" async="true"></script>
-    {% if page_name == 'home' %}
-    <script src="/js/pages/home.js"></script>
-    {% elseif page_name == 'detail' %}
-        <script src="/js/pages/detail.js"></script>
-    {% elseif page_name == 'search' %}
-        <script src="/js/pages/search.js"></script>
-    {% endif %}
-    <script src="/js/modules/storage.js"></script>
-    <script src="/js/modules/ui.js"></script>
-    <script src="/js/modules/api.js"></script>
-    <script src="/js/modules/cart.js"></script>
-    <script src="/js/modules/checkout.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/navbar.js"></script>
-    {% block javascripts %}{% endblock %}
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
 </body>
 </html>
