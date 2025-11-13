@@ -20,6 +20,8 @@ class BookstoreApiService
         $this->client = $bookstoreApiClient;
         $this->googleBooks = $googleBooks;
         $this->requestStack = $requestStack;
+
+        // Recuperar token de la sesión si existe
         $session = $this->requestStack->getSession();
         $this->token = $session->get('jwt_token');
     }
@@ -27,6 +29,8 @@ class BookstoreApiService
     public function setToken(?string $token): void
     {
         $this->token = $token;
+
+        // Guardar en sesión
         $session = $this->requestStack->getSession();
         if ($token) {
             $session->set('jwt_token', $token);
@@ -44,6 +48,8 @@ class BookstoreApiService
     {
         return $this->token !== null;
     }
+
+    // ==================== AUTENTICACIÓN ====================
 
     /**
      * POST /api/v1/auth/login
@@ -63,6 +69,7 @@ class BookstoreApiService
             if ($data['success'] && isset($data['data']['token'])) {
                 $this->setToken($data['data']['token']);
 
+                // Guardar datos del usuario en sesión
                 $session = $this->requestStack->getSession();
                 $session->set('user_data', $data['data']['usuario']);
             }
@@ -104,6 +111,8 @@ class BookstoreApiService
         $session = $this->requestStack->getSession();
         $session->clear();
     }
+
+    // ==================== LIBROS ====================
 
     /**
      * GET /api/v1/libros (con paginación y búsqueda)
@@ -186,9 +195,12 @@ class BookstoreApiService
             $data = $response->toArray();
             return $data['data'] ?? null;
         } catch (\Exception $e) {
+            // Fallback a Google Books
             return $this->googleBooks->getBookByIsbn($isbn);
         }
     }
+
+    // ==================== CATEGORÍAS ====================
 
     /**
      * GET /api/v1/categorias
@@ -207,6 +219,8 @@ class BookstoreApiService
         }
     }
 
+    // ==================== EDITORIALES ====================
+
     /**
      * GET /api/v1/editoriales
      */
@@ -223,6 +237,8 @@ class BookstoreApiService
             return [];
         }
     }
+
+    // ==================== PERFIL DE USUARIO ====================
 
     /**
      * GET /api/v1/users/me
@@ -262,6 +278,8 @@ class BookstoreApiService
             ];
         }
     }
+
+    // ==================== HELPERS ====================
 
     private function getHeaders(): array
     {

@@ -27,7 +27,7 @@ class CatalogController extends AbstractController
         $this->logger = $logger;
     }
 
-    #[Route('/', name: 'home')]
+    #[Route('/', name: 'catalog_index')]
     public function index(Request $request): Response
     {
         $this->logger->info('[Catalog] Index page accessed');
