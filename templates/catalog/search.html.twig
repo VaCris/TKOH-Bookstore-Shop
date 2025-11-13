@@ -101,7 +101,7 @@
     {% if totalPages > 1 %}
         <nav aria-label="Paginación" class="mt-5">
             <ul class="pagination justify-content-center">
-                <li class="page-item {{ currentPage == 0 ? 'disabled' }}">
+                <li class="page-item {{ currentPage == 1 ? 'disabled' }}">
                     <a class="page-link" href="{{ path('catalog_index', {
                         page: 0,
                         search: currentSearch,
@@ -111,7 +111,7 @@
                     </a>
                 </li>
 
-                <li class="page-item {{ currentPage == 0 ? 'disabled' }}">
+                <li class="page-item {{ currentPage == 1 ? 'disabled' }}">
                     <a class="page-link" href="{{ path('catalog_index', {
                         page: currentPage - 1,
                         search: currentSearch,
@@ -121,7 +121,7 @@
                     </a>
                 </li>
 
-                {% for i in range(max(0, currentPage - 2), min(totalPages - 1, currentPage + 2)) %}
+                {% for i in range(max(0, currentPage - 2), min(totalPages , currentPage + 2)) %}
                     <li class="page-item {{ i == currentPage ? 'active' }}">
                         <a class="page-link" href="{{ path('catalog_index', {
                             page: i,
@@ -161,9 +161,4 @@
 <div style="display:none;"
      data-cart-urls='{"add":"{{ path('cart_add') }}","count":"{{ path('cart_count') }}"}'></div>
 
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="/js/pages/home.js"></script>
 {% endblock %}

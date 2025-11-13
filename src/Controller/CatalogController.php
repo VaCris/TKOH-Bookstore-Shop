@@ -163,13 +163,15 @@ class CatalogController extends AbstractController
                 'query' => $query,
                 'page' => $page
             ]);
-
+            $totalPages = self::MAX_PAGES;
             return $this->render('catalog/search.html.twig', [
                 'books' => [],
-                'search' => $query,
-                'page' => $page,
-                'totalPages' => $page - 1,
-                'totalItems' => 0,
+                'currentSearch' => $query,
+                'currentCategoria' => null,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalElements' => count($books),
+                'categories' => $this->formatCategories($this->googleBooks->getPopularCategories()),
                 'error' => 'No hay más resultados disponibles en esta búsqueda.',
             ]);
         }
@@ -179,10 +181,11 @@ class CatalogController extends AbstractController
 
             return $this->render('catalog/search.html.twig', [
                 'books' => [],
-                'search' => $query,
-                'page' => 1,
+                'currentSearch' => $query,
+                'currentCategoria' => null,
+                'currentPage' => 1,
                 'totalPages' => 0,
-                'totalItems' => 0,
+                'totalElements' => 0,
                 'error' => 'No se encontraron resultados para tu búsqueda.',
             ]);
         }
@@ -198,10 +201,11 @@ class CatalogController extends AbstractController
 
         return $this->render('catalog/search.html.twig', [
             'books' => $books,
-            'search' => $query,
-            'page' => $page,
+            'currentSearch' => $query,
+            'currentCategoria' => null,
+            'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalItems' => count($books),
+            'totalElements' => count($books),
             'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
         ]);
     }
@@ -216,6 +220,7 @@ class CatalogController extends AbstractController
         $startIndex = ($page - 1) * self::ITEMS_PER_PAGE;
         $result = $this->googleBooks->getBooksByCategory($category, $startIndex, self::ITEMS_PER_PAGE);
         $books = $result['items'] ?? [];
+        $totalPages = self::MAX_PAGES;
 
         if ($page > 1 && empty($books)) {
             $this->logger->warning('[Catalog] No results on page for category', [
@@ -225,11 +230,12 @@ class CatalogController extends AbstractController
 
             return $this->render('catalog/search.html.twig', [
                 'books' => [],
-                'category' => $category,
-                'page' => $page,
+                'currentCategoria' => $category,
+                'currentPage' => $page,
                 'totalPages' => $page - 1,
-                'totalItems' => 0,
+                'totalElements' => 0,
                 'error' => 'No hay más libros en esta categoría.',
+                'currentSearch' => null
             ]);
         }
 
@@ -238,11 +244,12 @@ class CatalogController extends AbstractController
 
             return $this->render('catalog/search.html.twig', [
                 'books' => [],
-                'category' => $category,
-                'page' => 1,
+                'currentCategoria' => $category,
+                'currentPage' => 1,
                 'totalPages' => 0,
-                'totalItems' => 0,
+                'totalElements' => 0,
                 'error' => 'No hay libros en esta categoría.',
+                'currentSearch' => null
             ]);
         }
 
@@ -256,11 +263,12 @@ class CatalogController extends AbstractController
 
         return $this->render('catalog/search.html.twig', [
             'books' => $books,
-            'category' => $category,
-            'page' => $page,
+            'currentCategoria' => $category,
+            'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalItems' => count($books),
-            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories())
+            'totalElements' => count($books),
+            'categories' => $this->formatCategories($this->googleBooks->getPopularCategories()),
+            'currentSearch' => null
         ]);
     }
 

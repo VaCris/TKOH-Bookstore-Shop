@@ -5,14 +5,11 @@
 
 <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
     <div class="container-fluid px-4">
-
-        {# Logo y Marca #}
         <a class="navbar-brand d-flex align-items-center" href="{{ path('catalog_index') }}">
             <i class="bi bi-book-fill me-2 fs-3"></i>
             <span class="brand-text">TKOH <span class="brand-highlight">Bookstore</span></span>
         </a>
 
-        {# Mobile Toggle #}
         <button class="navbar-toggler border-0"
                 type="button"
                 data-bs-toggle="collapse"
@@ -20,10 +17,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        {# Navbar Content #}
         <div class="collapse navbar-collapse" id="navbarMain">
-
-            {# Navegación Principal #}
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link" href="{{ path('catalog_index') }}">
@@ -40,27 +34,27 @@
                     <ul class="dropdown-menu dropdown-menu-modern">
                         <li>
                             <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Fiction'}) }}">
-                                📚 Ficción
+                                Ficción
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Science Fiction'}) }}">
-                                🚀 Ciencia Ficción
+                                Ciencia Ficción
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Fantasy'}) }}">
-                                🧙 Fantasía
+                                Fantasía
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Mystery'}) }}">
-                                🔍 Misterio
+                                Misterio
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ path('catalog_index', {categoria: 'Romance'}) }}">
-                                💕 Romance
+                                Romance
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
